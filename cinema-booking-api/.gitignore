@@ -1,0 +1,25 @@
+# Cinema Booking API
+
+## Build
+target/
+*.class
+*.jar
+
+## IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Environment
+.env
+
+## Logs
+*.log
+logs/

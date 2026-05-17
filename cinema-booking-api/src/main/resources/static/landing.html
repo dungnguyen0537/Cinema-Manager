@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cinema 8 Star — Hệ Thống Đặt Vé Xem Phim Trực Tuyến</title>
+
+  <!-- === SEO CƠ BẢN === -->
+  <meta name="description"
+    content="Cinema 8 Star - Hệ thống đặt vé xem phim trực tuyến hàng đầu. Chọn phim yêu thích, đặt ghế, thanh toán tự động 100% qua VietQR. Real-time, tiện lợi, nhanh chóng.">
+  <meta name="keywords"
+    content="đặt vé xem phim, cinema, rạp chiếu phim, cinema 8 star, vé phim trực tuyến, đặt vé online, lịch chiếu phim, phim đang chiếu, book vé phim">
+  <meta name="author" content="Nhóm 8 — Lập Trình Web Bằng Java">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://cinema.dshinee.site/">
+
+  <!-- === FAVICON & ICONS === -->
+  <link rel="icon" type="image/jpeg" href="/cinema.jpg">
+  <link rel="apple-touch-icon" href="/cinema.jpg">
+  <meta name="theme-color" content="#4F46E5">
+
+  <!-- === OPEN GRAPH (Facebook, Zalo, LinkedIn) === -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cinema.dshinee.site/">
+  <meta property="og:title" content="Cinema 8 Star — Đặt Vé Xem Phim Trực Tuyến">
+  <meta property="og:description"
+    content="Hệ thống đặt vé xem phim hiện đại. Chọn ghế, thanh toán VietQR tự động trong 5-10 giây. Real-time 24/7.">
+  <meta property="og:image" content="https://cinema.dshinee.site/cinema.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Cinema 8 Star Logo">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:site_name" content="Cinema 8 Star">
+
+  <!-- === TWITTER CARD === -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cinema 8 Star — Đặt Vé Xem Phim Trực Tuyến">
+  <meta name="twitter:description"
+    content="Chọn phim, chọn ghế, thanh toán tự động. Trải nghiệm đặt vé hiện đại tại Cinema 8 Star.">
+  <meta name="twitter:image" content="https://cinema.dshinee.site/cinema.jpg">
+
+  <!-- === DỮ LIỆU CẤU TRÚC JSON-LD === -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Cinema 8 Star",
+    "url": "https://cinema.dshinee.site",
+    "logo": "https://cinema.dshinee.site/cinema.jpg",
+    "description": "Hệ thống đặt vé xem phim trực tuyến — Tự động 100%, Real-time 24/7"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MovieTheater",
+    "name": "Cinema 8 Star",
+    "image": "https://cinema.dshinee.site/cinema.jpg",
+    "description": "Hệ thống rạp chiếu phim trực tuyến hiện đại. Đặt vé, chọn ghế, thanh toán tự động.",
+    "url": "https://cinema.dshinee.site",
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+      "opens": "00:00",
+      "closes": "23:59"
+    }
+  }
+  </script>
+
+  <!-- === FONT CHỮ === -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --primary-light: #818CF8;
+      --secondary: #06B6D4;
+      --accent: #F43F5E;
+      --bg: #F8FAFC;
+      --surface: rgba(255, 255, 255, 0.7);
+      --surface-solid: #FFFFFF;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --border: rgba(148, 163, 184, 0.2);
+      --font-heading: 'Be Vietnam Pro', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* NỀN GRADIENT MESH */
+    .mesh-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+        radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+      background-color: #f0f4f8;
+      /* Màu nền dự phòng */
+      opacity: 0.1;
+      filter: blur(100px);
+      animation: bgPulse 15s ease-in-out infinite alternate;
+    }
+
+    @keyframes bgPulse {
+      0% {
+        transform: scale(1);
+      }
+
+      100% {
+        transform: scale(1.1);
+      }
+    }
+
+    /* THANH ĐIỀU HƯỚNG */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.8);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      transition: all 0.3s ease;
+    }
+
+    nav.scrolled {
+      padding: 12px 40px;
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo img {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .logo:hover img {
+      transform: rotate(-10deg) scale(1.1);
+    }
+
+    .logo-text {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-badge {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .btn-nav {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      font-weight: 600;
+      font-family: var(--font-heading);
+      padding: 10px 24px;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-nav::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn-nav:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-nav:hover::before {
+      left: 100%;
+    }
+
+    /* KHU VỰC HERO CHÍNH */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 140px 20px 80px;
+      position: relative;
+    }
+
+    .hero-content {
+      max-width: 900px;
+      z-index: 2;
+      animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 8px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 32px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .pill-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--secondary);
+      box-shadow: 0 0 10px var(--secondary);
+      animation: pulse 2s infinite;
+    }
+
+    h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    h1 span {
+      background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientShift 5s linear infinite;
+    }
+
+    .hero-sub {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+      max-width: 600px;
+      margin-inline: auto;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-large {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--text);
+      color: white;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      padding: 16px 36px;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: 1.05rem;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-large:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+    }
+
+    .btn-large svg {
+      transition: transform 0.3s;
+    }
+
+    .btn-large:hover svg {
+      transform: translateX(4px);
+    }
+
+    .btn-text {
+      color: var(--text);
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 1.05rem;
+      padding: 16px 24px;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .btn-text::after {
+      content: '';
+      position: absolute;
+      bottom: 10px;
+      left: 24px;
+      right: 24px;
+      height: 2px;
+      background: var(--primary);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+      transform-origin: right;
+    }
+
+    .btn-text:hover {
+      color: var(--primary);
+    }
+
+    .btn-text:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    /* THẺ KÍNH NỔI TRANG TRÍ */
+    .floating-cards {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .f-card {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+      animation: floatSlow 8s ease-in-out infinite;
+    }
+
+    .f-card-1 {
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+      transform: rotate(-5deg);
+    }
+
+    .f-card-2 {
+      bottom: 20%;
+      right: 10%;
+      animation-delay: -4s;
+      transform: rotate(5deg);
+    }
+
+    /* PHẦN BỐ CỤC CHUNG */
+    section {
+      padding: 120px 20px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .sec-badge {
+      display: inline-block;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 0.8rem;
+      margin-bottom: 16px;
+    }
+
+    .sec-title {
+      font-family: var(--font-heading);
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 24px;
+      line-height: 1.2;
+    }
+
+    .sec-desc {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin-bottom: 60px;
+    }
+
+    /* LƯỚI TÍNH NĂNG */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+
+    .feature-card {
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transition: transform 0.5s;
+      transform-origin: left;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+    }
+
+    .feature-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .f-icon {
+      width: 60px;
+      height: 60px;
+      background: rgba(79, 70, 229, 0.08);
+      color: var(--primary);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 24px;
+      transition: transform 0.3s;
+    }
+
+    .feature-card:hover .f-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .feature-card h3 {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* THÀNH VIÊN NHÓM */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 30px;
+    }
+
+    /* Hàng 1: 3 thẻ, mỗi thẻ chiếm 2 cột (2+2+2 = 6) */
+    .team-card:nth-child(1) { grid-column: 1 / 3; }
+    .team-card:nth-child(2) { grid-column: 3 / 5; }
+    .team-card:nth-child(3) { grid-column: 5 / 7; }
+
+    /* Hàng 2: 2 thẻ căn giữa, mỗi thẻ chiếm 2 cột, bắt đầu từ cột 2 và 4 */
+    .team-card:nth-child(4) { grid-column: 2 / 4; }
+    .team-card:nth-child(5) { grid-column: 4 / 6; }
+
+    .team-card {
+      background: var(--surface-solid);
+      border-radius: 24px;
+      padding: 30px 20px;
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: all 0.4s;
+    }
+
+    .team-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+      border-color: var(--primary-light);
+    }
+
+    .team-avatar {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #e2e8f0, #f8fafc);
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.05);
+      border: 2px solid white;
+    }
+
+    .team-card h4 {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+
+    .team-id {
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+      background: rgba(79, 70, 229, 0.1);
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 10px;
+    }
+
+    .team-role {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* CÔNG NGHỆ SỬ DỤNG */
+    .tech-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .tech-pill {
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      padding: 12px 24px;
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      color: var(--text);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: default;
+    }
+
+    .tech-pill:hover {
+      transform: scale(1.05) translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      border-color: var(--primary);
+    }
+
+    .tech-pill img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+
+    .tech-pill span.icon {
+      font-size: 1.2rem;
+    }
+
+    /* NÚT KÊU GỌI HÀNH ĐỘNG (CTA) */
+    .cta-container {
+      background: var(--text);
+      border-radius: 32px;
+      padding: 80px 40px;
+      text-align: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(79, 70, 229, 0.3) 0%, transparent 50%);
+      animation: rotateBg 20s linear infinite;
+    }
+
+    .cta-container h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .cta-btn {
+      background: white;
+      color: var(--text);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      padding: 18px 40px;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: 1.1rem;
+      display: inline-block;
+      position: relative;
+      z-index: 2;
+      transition: all 0.3s;
+    }
+
+    .cta-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
+    }
+
+    /* CHÂN TRANG */
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* HIỆU ỨNG CHUYỂN ĐỘNG (KEYFRAMES) */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes floatSlow {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(-5deg);
+      }
+
+      50% {
+        transform: translateY(-20px) rotate(0deg);
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(6, 182, 212, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(6, 182, 212, 0);
+      }
+    }
+
+    @keyframes gradientShift {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    @keyframes rotateBg {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .delay-1 {
+      transition-delay: 0.1s;
+    }
+
+    .delay-2 {
+      transition-delay: 0.2s;
+    }
+
+    .delay-3 {
+      transition-delay: 0.3s;
+    }
+
+    /* THIẾT KẾT ĐÁP ỨNG (RESPONSIVE) */
+    @media (max-width: 768px) {
+      nav {
+        padding: 12px 20px;
+      }
+
+      nav.scrolled {
+        padding: 10px 20px;
+      }
+
+      .logo-text {
+        font-size: 1.1rem;
+      }
+
+      .nav-badge {
+        display: none;
+      }
+
+      .btn-nav {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+      }
+
+      #hero {
+        padding: 120px 16px 60px;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 8vw, 3.5rem);
+      }
+
+      .hero-sub {
+        font-size: 1rem;
+        margin-bottom: 30px;
+      }
+
+      .hero-btns {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+      }
+
+      .btn-large {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .floating-cards {
+        display: none;
+      }
+
+      section {
+        padding: 80px 16px;
+      }
+
+      .sec-title {
+        font-size: clamp(1.8rem, 6vw, 2.5rem);
+        margin-bottom: 16px;
+      }
+
+      .sec-desc {
+        font-size: 1rem;
+        margin-bottom: 40px;
+      }
+
+      .feature-card {
+        padding: 30px 20px;
+      }
+
+      .tech-wrap {
+        gap: 10px;
+      }
+
+      .tech-pill {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .cta-container {
+        padding: 50px 20px;
+      }
+
+      .cta-container h2 {
+        font-size: 1.8rem;
+      }
+
+      .cta-btn {
+        width: 100%;
+        text-align: center;
+        font-size: 1rem;
+        padding: 16px 20px;
+      }
+
+      /* Reset layout thanh vien ve 1 cot tren mobile */
+      .team-grid {
+        grid-template-columns: 1fr;
+      }
+      .team-card:nth-child(1),
+      .team-card:nth-child(2),
+      .team-card:nth-child(3),
+      .team-card:nth-child(4),
+      .team-card:nth-child(5) {
+        grid-column: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="mesh-bg"></div>
+
+  <nav id="navbar">
+    <div class="logo">
+      <img src="cinema.jpg" alt="Cinema Logo">
+      <div>
+        <div class="logo-text">Cinema 8 Star</div>
+        <div class="nav-badge">Nền Tảng Đặt Vé Xem Phim</div>
+      </div>
+    </div>
+    <a href="/home" class="btn-nav">Bắt Đầu Ngay</a>
+  </nav>
+
+  <section id="hero">
+    <div class="floating-cards">
+      <div class="f-card f-card-1">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div
+            style="width:40px;height:40px;border-radius:10px;background:var(--primary);display:flex;align-items:center;justify-content:center;color:white;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg></div>
+          <div>
+            <div style="font-weight:700;font-size:0.9rem;">Đặt Vé Thành Công</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Vừa xong</div>
+          </div>
+        </div>
+      </div>
+      <div class="f-card f-card-2" style="animation-duration:10s;">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div
+            style="width:40px;height:40px;border-radius:10px;background:var(--secondary);display:flex;align-items:center;justify-content:center;color:white;">
+            💳</div>
+          <div>
+            <div style="font-weight:700;font-size:0.9rem;">Thanh Toán QR</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Duyệt đơn tự động</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <div class="pill-badge">
+        <span class="dot"></span> Đồ Án Lập Trình Web Bằng Java
+      </div>
+      <h1>Trải Nghiệm Đặt Vé Phim Trực Tuyến<br><span>Thế Hệ Mới.</span></h1>
+      <p class="hero-sub">Cinema 8 Star - Hệ thống đặt vé xem phim trực tuyến hàng đầu Việt Nam. Với tiêu chí xây dựng
+        hệ thống thông minh, thân thiện với người dùng, giúp giải quyết vấn đề thời gian, rủi ro, các vấn đề bất tiện
+        khi phải đặt vé xem phim tại rạp. Hệ thống được xây dựng với việc sử dụng nhiều công nghệ cao, hoạt động ổn
+        định, real-time 24/7, hoạt động tự động 100% và không phải chờ đợi, mang lại trải nghiệm tốt nhất cho người dùng
+      </p>
+
+      <div class="hero-btns">
+        <a href="/home" class="btn-large">
+          Khám Phá Ngay
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+        <a href="#features" class="btn-text">Tìm Hiểu Thêm</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="container">
+      <div class="reveal">
+        <span class="sec-badge">Tính Năng Cốt Lõi</span>
+        <h2 class="sec-title">Hệ thống sử dụng các công nghệ<br> Tự Động - Hiện Đại</h2>
+      </div>
+
+      <div class="feature-grid mt-4">
+        <div class="feature-card reveal delay-1">
+          <div class="f-icon">⚡</div>
+          <h3>Real-time Booking</h3>
+          <p>Hệ thống chọn ghế và giữ chỗ thời gian thực, đảm bảo không trùng lặp giao dịch giữa nhiều người dùng cùng
+            lúc.</p>
+        </div>
+        <div class="feature-card reveal delay-2">
+          <div class="f-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+          <h3>Thanh Toán Tự Động</h3>
+          <p>Tích hợp thanh toán tự động 100%, hệ thống tự động duyệt đơn và xuất vé sau 5-10s thanh toán.</p>
+        </div>
+        <div class="feature-card reveal delay-3">
+          <div class="f-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h3>Bảo Mật & Quản Trị</h3>
+          <p>Xác thực JWT an toàn. Các tài khoản được quản lý chặt chẽ, đồng bộ với hệ thống 100%</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tech">
+    <div class="container text-center">
+      <div class="reveal" style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+        <span class="sec-badge">Công Nghệ Hiện Đại</span>
+        <h2 class="sec-title">Technology Stack</h2>
+        <p class="sec-desc text-center">Hệ thống Sử dụng kết hợp hài hòa giữa công nghệ Backend Hiện đại mang lại hiệu
+          năng cao và giao diện Frontend mới mẻ, thân thiện với người dùng.
+        </p>
+      </div>
+
+      <div class="tech-wrap reveal delay-1">
+        <div class="tech-pill"><img src="images/spring.png" alt="Spring"> Java Spring Boot 3</div>
+        <div class="tech-pill"><img src="images/jwt.jpg" alt="JWT" style="border-radius:4px;"> Spring Security & JWT
+        </div>
+        <div class="tech-pill"><img src="images/postgreSQL.png" alt="PostgreSQL"> PostgreSQL 16</div>
+        <div class="tech-pill"><img src="images/redis.png" alt="Redis"> Redis Cache</div>
+        <div class="tech-pill"><img src="images/js.jpg" alt="JS" style="border-radius:4px;"> Vanilla JS SPA</div>
+        <div class="tech-pill"><img src="images/css3.png" alt="CSS3"> CSS3 Animation</div>
+        <div class="tech-pill"><img src="images/docker.jpg" alt="Docker" style="border-radius:4px;"> Docker Compose
+        </div>
+        <div class="tech-pill"><img src="images/flyway.png" alt="Flyway"> Flyway Migration</div>
+        <div class="tech-pill"><img src="images/nginx.png" alt="Nginx"> Nginx Proxy</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="team">
+    <div class="container">
+      <div class="reveal" style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+        <span class="sec-badge">Đội Ngũ Phát Triển & Xây Dựng</span>
+        <h2 class="sec-title">Thành Viên Nhóm 8</h2>
+      </div>
+
+      <div class="team-grid reveal delay-1 mt-4">
+        <div class="team-card">
+          <div class="team-avatar"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <h4>Nguyễn Văn Dũng</h4>
+          <div class="team-id">MSV: 2023601938</div>
+          <div class="team-role">Backend Lead & Architecture</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <h4>Đặng Quốc Anh</h4>
+          <div class="team-id">MSV: 2023601786</div>
+          <div class="team-role">Frontend Developer</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <h4>Trần Thị Hạnh</h4>
+          <div class="team-id">MSV: 2023603322</div>
+          <div class="team-role">UI/UX & Animation</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <h4>Hồ Sỹ Thành</h4>
+          <div class="team-id">MSV: 2023603258</div>
+          <div class="team-role">Database Designer</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <h4>Nguyễn Thanh Phương</h4>
+          <div class="team-id">MSV: 2023603282</div>
+          <div class="team-role">DevOps & Cloud</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta">
+    <div class="container">
+      <div class="cta-container reveal">
+        <h2>Bạn Sẵn Sàng Mua Vé?</h2>
+        <a href="/home" class="cta-btn">Truy Cập Hệ Thống Ngay</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>Cinema 8 Star</strong> — Hệ Thống Đặt Vé Xem Phim Trực Tuyến.</p>
+    <p>Lập trình Web bằng Java | Khoa Công nghệ Thông tin</p>
+    <p style="margin-top: 10px;">&copy; 2026 Nhóm 8.</p>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+
+    // Reveal animations
+    const revealElements = document.querySelectorAll('.reveal');
+    const revealCallback = (entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+          observer.unobserve(entry.target);
+        }
+      });
+    };
+    const revealOptions = { threshold: 0.15, rootMargin: "0px 0px -50px 0px" };
+    const revealObserver = new IntersectionObserver(revealCallback, revealOptions);
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    // 3D Tilt Effect on Feature Cards
+    const cards = document.querySelectorAll('.feature-card');
+    cards.forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -5;
+        const rotateY = ((x - centerX) / centerX) * 5;
+
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)`;
+      });
+    });
+  </script>
+</body>
+
+</html>

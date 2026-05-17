@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cinema-postgres-prod
+    environment:
+      POSTGRES_DB: ${DB_NAME:-cinema_booking}
+      POSTGRES_USER: ${DB_USERNAME:-cinema_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-Cinema@2024#Secure}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-cinema_user} -d ${DB_NAME:-cinema_booking}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: always
+    networks:
+      - cinema-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: cinema-redis-prod
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: always
+    networks:
+      - cinema-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cinema-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Database - hardcode service name to prevent Spring Boot using 'localhost'
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${DB_NAME:-cinema_booking}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-cinema_user}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-Cinema@2024#Secure}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-cinema_booking}
+      - DB_USERNAME=${DB_USERNAME:-cinema_user}
+      - DB_PASSWORD=${DB_PASSWORD:-Cinema@2024#Secure}
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # Auth
+      - JWT_SECRET=${JWT_SECRET:-dGhpc0lzQVZlcnlMb25nU2VjcmV0S2V5Rm9yQ2luZW1hQm9va2luZ1N5c3RlbTIwMjQ=}
+      # MB Bank (dvsteam.vn) - defaults match application.yml
+      - MBBANK_API_TOKEN=${MBBANK_API_TOKEN:-d10b28d223e240bed1ea3d9ebf594b35}
+      - MBBANK_ACCOUNT_NUMBER=${MBBANK_ACCOUNT_NUMBER:-83865888888}
+      - MBBANK_ACCOUNT_NAME=${MBBANK_ACCOUNT_NAME:-NGUYEN VAN DUNG}
+      # Mail (optional)
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      # CORS
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 180s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    restart: always
+    networks:
+      - cinema-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: cinema-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      app:
+        condition: service_started
+    restart: always
+    networks:
+      - cinema-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
+
+networks:
+  cinema-network:
+    driver: bridge
