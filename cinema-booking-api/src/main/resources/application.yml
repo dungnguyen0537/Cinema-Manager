@@ -73,9 +73,9 @@ app:
   # MB Bank (dvsteam.vn) Configuration
   payment:
     mbbank:
-      token: ${MBBANK_API_TOKEN:d10b28d223e240bed1ea3d9ebf594b35}
-      account-number: ${MBBANK_ACCOUNT_NUMBER:83865888888}
-      account-name: ${MBBANK_ACCOUNT_NAME:NGUYEN VAN DUNG}
+      token: ${MBBANK_API_TOKEN:6bd280d48b4920b21ccef3a5569a5258}
+      account-number: ${MBBANK_ACCOUNT_NUMBER:0348950574}
+      account-name: ${MBBANK_ACCOUNT_NAME:DANG QUOC ANH}
 
   # Booking Configuration
   booking:

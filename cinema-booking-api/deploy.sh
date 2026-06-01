@@ -61,9 +61,9 @@ set_env DB_PASSWORD      "Cinema@2024#Secure"
 set_env REDIS_HOST       "redis"
 set_env REDIS_PORT       "6379"
 # MB Bank – dùng đúng giá trị mặc định trong application.yml
-set_env MBBANK_API_TOKEN        "d10b28d223e240bed1ea3d9ebf594b35"
-set_env MBBANK_ACCOUNT_NUMBER   "83865888888"
-set_env MBBANK_ACCOUNT_NAME     "NGUYEN VAN DUNG"
+set_env MBBANK_API_TOKEN        "6bd280d48b4920b21ccef3a5569a5258"
+set_env MBBANK_ACCOUNT_NUMBER   "0348950574"
+set_env MBBANK_ACCOUNT_NAME     "DANG QUOC ANH"
 # Mail (không bắt buộc)
 set_env MAIL_USERNAME    ""
 set_env MAIL_PASSWORD    ""

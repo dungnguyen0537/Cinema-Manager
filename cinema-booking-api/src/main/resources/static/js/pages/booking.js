@@ -63,11 +63,11 @@ async function renderBooking(app) {
                                 </div>
                                 <div style="margin-bottom:12px;">
                                     <div style="font-size:0.8rem; opacity:0.6; text-transform:uppercase;">Số tài khoản</div>
-                                    <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary);">83865888888</div>
+                                    <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary);">0348950574</div>
                                 </div>
                                 <div style="margin-bottom:12px;">
                                     <div style="font-size:0.8rem; opacity:0.6; text-transform:uppercase;">Chủ tài khoản</div>
-                                    <div style="font-weight:600;">NGUYEN VAN DUNG</div>
+                                    <div style="font-weight:600;">DANG QUOC ANH</div>
                                 </div>
                                 <div style="margin-bottom:20px;">
                                     <div style="font-size:0.8rem; opacity:0.6; text-transform:uppercase;">Nội dung chuyển khoản</div>
