@@ -1,6 +1,9 @@
-/* Trang Chủ */
+/* Trang Chủ — Hero Carousel với vuốt vòng tròn liên tục */
 let heroCarouselTimer = null;
 let currentHeroSlideIdx = 0;
+let heroTouchStartX = 0;
+let heroTouchEndX = 0;
+let heroSlideCount = 0;
 
 async function renderHome(app) {
     app.innerHTML = `
@@ -41,89 +44,101 @@ async function renderHome(app) {
     }
 
     try {
-        const res = await api.get('/movies?size=50'); // Fetch 50 movies to filter newly added
+        const res = await api.get('/movies?size=50');
         if (res && res.data) {
             const movies = res.data.content || res.data || [];
-            
-            // Lọc ra các phim mới thêm trong 7 ngày gần đây
+
+            // Lọc phim mới thêm trong 7 ngày
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            
+
             let newlyAdded = movies.filter(m => {
                 if (!m.createdAt) return false;
-                const createdDate = new Date(m.createdAt);
-                return createdDate >= sevenDaysAgo;
+                return new Date(m.createdAt) >= sevenDaysAgo;
             });
 
-            // Nếu không có phim nào mới thêm trong 7 ngày, chọn ra 5 phim mới nhất trong hệ thống để làm slide giới thiệu
+            // Fallback: lấy 5 phim mới nhất
             if (newlyAdded.length === 0 && movies.length > 0) {
                 newlyAdded = [...movies].sort((a, b) => {
-                    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-                    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-                    return dateB - dateA || b.id - a.id;
+                    const dA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                    const dB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+                    return dB - dA || b.id - a.id;
                 }).slice(0, 5);
             }
 
-            // Cập nhật phần Hero
+            // Xây dựng Hero Carousel
             const heroPlaceholder = document.getElementById('hero-section-placeholder');
-            if (heroPlaceholder) {
-                if (newlyAdded.length > 0) {
-                    // Hiển thị Hero Slider cho các phim mới
-                    let slidesHtml = newlyAdded.map((m, idx) => {
-                        const poster = m.posterUrl || '';
-                        const genres = Array.from(m.genres || []).join(', ') || 'Thể loại';
-                        return `
-                            <div class="hero-slide ${idx === 0 ? 'active' : ''}" style="background-image: linear-gradient(rgba(10, 10, 12, 0.45), rgba(10, 10, 12, 0.85)), url('${poster}')">
-                                <div class="hero-slide-content">
-                                    <div class="hero-badge-new">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:4px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                        PHIM MỚI THÊM
-                                    </div>
-                                    <h1 class="hero-title-carousel">${m.title}</h1>
-                                    <div class="hero-movie-meta">
-                                        <span class="meta-tag age-rating">${m.ageRating || 'C13'}</span>
-                                        <span>• ${m.durationMinutes || '?'} phút</span>
-                                        <span>• ${genres}</span>
-                                    </div>
-                                    <p class="hero-movie-desc">${m.description || 'Khám phá bộ phim mới được cập nhật tại rạp chiếu phim Cinema 8 Star.'}</p>
-                                    <div class="hero-slide-actions">
-                                        <button class="btn btn-primary btn-lg" onclick="navigate('/movie', {id: ${m.id}})">
-                                            Đặt vé ngay
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-left:6px"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                                        </button>
-                                    </div>
+            if (heroPlaceholder && newlyAdded.length > 0) {
+                heroSlideCount = newlyAdded.length;
+
+                const slidesHtml = newlyAdded.map((m, idx) => {
+                    const poster = m.posterUrl || '';
+                    const genres = Array.from(m.genres || []).join(', ') || 'Thể loại';
+                    return `
+                        <div class="hero-slide ${idx === 0 ? 'active' : ''}" style="background-image: url('${poster}')">
+                            <div class="hero-slide-content">
+                                <div class="hero-badge-new">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-1px;margin-right:5px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    PHIM MỚI
+                                </div>
+                                <h1 class="hero-title-carousel">${m.title}</h1>
+                                <div class="hero-movie-meta">
+                                    <span class="meta-tag age-rating">${m.ageRating || 'P'}</span>
+                                    <span>${m.durationMinutes || '?'} phút</span>
+                                    <span>${genres}</span>
+                                </div>
+                                <p class="hero-movie-desc">${m.description || 'Khám phá bộ phim mới được cập nhật tại Cinema 8 Star.'}</p>
+                                <div class="hero-slide-actions">
+                                    <button class="btn btn-primary btn-lg" onclick="navigate('/movie', {id: ${m.id}})">
+                                        Đặt vé ngay
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-left:6px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                    </button>
                                 </div>
                             </div>
-                        `;
-                    }).join('');
+                        </div>`;
+                }).join('');
 
-                    let indicatorsHtml = newlyAdded.map((_, idx) => `
-                        <span class="indicator-dot ${idx === 0 ? 'active' : ''}" onclick="switchHeroSlide(${idx})"></span>
-                    `).join('');
+                const indicatorsHtml = newlyAdded.map((_, idx) =>
+                    `<span class="indicator-dot ${idx === 0 ? 'active' : ''}" onclick="switchHeroSlide(${idx})"></span>`
+                ).join('');
 
-                    heroPlaceholder.innerHTML = `
-                        <section class="hero hero-carousel-section">
-                            <div class="hero-carousel-container" id="hero-carousel-container">
-                                ${slidesHtml}
-                            </div>
-                            <div class="hero-carousel-indicators">
-                                ${indicatorsHtml}
-                            </div>
-                            <div class="hero-search" style="position: relative; margin-top: 32px; z-index: 10;">
+                heroPlaceholder.innerHTML = `
+                    <section class="hero hero-carousel-section" id="hero-carousel-root">
+                        <div class="hero-carousel-container" id="hero-carousel-container">
+                            ${slidesHtml}
+                        </div>
+
+                        <!-- Nút mũi tên trái/phải -->
+                        <button class="hero-nav-arrow hero-nav-prev" onclick="heroNavigate(-1)" aria-label="Phim trước">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <button class="hero-nav-arrow hero-nav-next" onclick="heroNavigate(1)" aria-label="Phim tiếp">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 6 15 12 9 18"/></svg>
+                        </button>
+
+                        <!-- Chỉ báo slide -->
+                        <div class="hero-carousel-indicators">
+                            ${indicatorsHtml}
+                        </div>
+
+                        <!-- Thanh tìm kiếm -->
+                        <div class="hero-search-wrapper">
+                            <div class="hero-search" style="position:relative">
                                 <input type="text" id="search-input" placeholder="Tìm kiếm phim..." autocomplete="off" onkeydown="if(event.key === 'Enter') searchMovies(this.value)" oninput="handleSearchInput(this.value)">
-                                <svg class="search-icon" onclick="searchMovies(document.getElementById('search-input').value)" style="position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                <svg class="search-icon" onclick="searchMovies(document.getElementById('search-input').value)" style="position:absolute;right:18px;top:50%;transform:translateY(-50%);color:var(--text-muted);cursor:pointer" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                                 <div id="search-suggestions" class="search-suggestions" style="display:none;"></div>
                             </div>
-                        </section>
-                    `;
+                        </div>
+                    </section>
+                `;
 
-                    // Khởi động auto-slide
-                    currentHeroSlideIdx = 0;
-                    startHeroCarousel();
-                }
+                // Khởi tạo carousel
+                currentHeroSlideIdx = 0;
+                startHeroCarousel();
+                initHeroSwipe();
             }
 
-            // Hiển thị danh sách Phim đang chiếu / Phim sắp chiếu ở dưới
+            // Danh sách phim
             const nowShowing = movies.filter(m => m.status === 'NOW_SHOWING');
             const comingSoon = movies.filter(m => m.status === 'COMING_SOON');
 
@@ -140,42 +155,103 @@ async function renderHome(app) {
     }
 }
 
-// Chuyển slide thủ công khi nhấp vào indicator
+// ======= ĐIỀU HƯỚNG CAROUSEL =======
+
+// Chuyển đến slide bất kỳ (vòng tròn)
 function switchHeroSlide(idx) {
     const slides = document.querySelectorAll('.hero-slide');
     const indicators = document.querySelectorAll('.indicator-dot');
     if (!slides.length) return;
-    
+
+    // Vòng tròn: idx có thể < 0 hoặc >= length
+    idx = ((idx % slides.length) + slides.length) % slides.length;
+
     slides.forEach(s => s.classList.remove('active'));
-    indicators.forEach(ind => ind.classList.remove('active'));
-    
+    indicators.forEach(d => d.classList.remove('active'));
+
     slides[idx].classList.add('active');
-    indicators[idx].classList.add('active');
+    if (indicators[idx]) indicators[idx].classList.add('active');
     currentHeroSlideIdx = idx;
-    
-    // Khởi động lại timer để không bị trôi slide ngay lập tức sau khi nhấn
-    if (heroCarouselTimer) {
-        clearInterval(heroCarouselTimer);
-        startHeroCarousel();
-    }
+
+    // Reset timer tự động
+    restartHeroTimer();
+}
+
+// Nút mũi tên: -1 = trái, +1 = phải (vòng tròn)
+function heroNavigate(direction) {
+    switchHeroSlide(currentHeroSlideIdx + direction);
 }
 
 function startHeroCarousel() {
     heroCarouselTimer = setInterval(() => {
-        const slides = document.querySelectorAll('.hero-slide');
-        const indicators = document.querySelectorAll('.indicator-dot');
-        if (slides.length <= 1) return;
-
-        slides[currentHeroSlideIdx].classList.remove('active');
-        if (indicators[currentHeroSlideIdx]) indicators[currentHeroSlideIdx].classList.remove('active');
-
-        currentHeroSlideIdx = (currentHeroSlideIdx + 1) % slides.length;
-
-        slides[currentHeroSlideIdx].classList.add('active');
-        if (indicators[currentHeroSlideIdx]) indicators[currentHeroSlideIdx].classList.add('active');
+        switchHeroSlide(currentHeroSlideIdx + 1);
     }, 5000);
 }
 
+function restartHeroTimer() {
+    if (heroCarouselTimer) clearInterval(heroCarouselTimer);
+    startHeroCarousel();
+}
+
+// ======= VUỐT CẢM ỨNG (SWIPE) =======
+function initHeroSwipe() {
+    const root = document.getElementById('hero-carousel-root');
+    if (!root) return;
+
+    let startX = 0;
+    let isDragging = false;
+
+    // Touch events (điện thoại)
+    root.addEventListener('touchstart', e => {
+        startX = e.changedTouches[0].clientX;
+        isDragging = true;
+    }, { passive: true });
+
+    root.addEventListener('touchend', e => {
+        if (!isDragging) return;
+        isDragging = false;
+        const endX = e.changedTouches[0].clientX;
+        handleSwipe(startX, endX);
+    }, { passive: true });
+
+    // Mouse events (máy tính — kéo chuột)
+    root.addEventListener('mousedown', e => {
+        startX = e.clientX;
+        isDragging = true;
+    });
+
+    root.addEventListener('mouseup', e => {
+        if (!isDragging) return;
+        isDragging = false;
+        handleSwipe(startX, e.clientX);
+    });
+
+    root.addEventListener('mouseleave', () => { isDragging = false; });
+
+    // Phím mũi tên
+    document.addEventListener('keydown', e => {
+        const heroRoot = document.getElementById('hero-carousel-root');
+        if (!heroRoot) return;
+        if (e.key === 'ArrowLeft') heroNavigate(-1);
+        if (e.key === 'ArrowRight') heroNavigate(1);
+    });
+}
+
+function handleSwipe(startX, endX) {
+    const diff = startX - endX;
+    const threshold = 50; // Ngưỡng vuốt tối thiểu (px)
+    if (Math.abs(diff) < threshold) return;
+
+    if (diff > 0) {
+        // Vuốt sang trái → slide tiếp theo
+        heroNavigate(1);
+    } else {
+        // Vuốt sang phải → slide trước
+        heroNavigate(-1);
+    }
+}
+
+// ======= MOVIE CARD =======
 function movieCard(movie) {
     const badge = movie.status === 'NOW_SHOWING'
         ? '<span class="movie-badge badge-showing">Đang chiếu</span>'
