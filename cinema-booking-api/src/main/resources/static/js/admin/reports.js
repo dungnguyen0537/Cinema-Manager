@@ -435,67 +435,148 @@ function removeVietnameseTones(str) {
 }
 
 // =============== EXPORT PDF ===============
-function exportReportToPDF() {
+async function exportReportToPDF() {
     if (!currentReportData) { showToast('Chưa có dữ liệu để xuất báo cáo', 'warning'); return; }
+
+    showToast('Đang tạo báo cáo PDF...', 'info');
+
     try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'mm', 'a4');
-
-        // Header
-        doc.setFillColor(79, 70, 229);
-        doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFont('Helvetica', 'bold'); doc.setFontSize(22);
-        doc.text("CINEMA 8 STAR", 15, 18);
-        doc.setFont('Helvetica', 'normal'); doc.setFontSize(10);
-        doc.text("He thong Rap chieu phim hien dai & Tu dong", 15, 25);
-        doc.text("Generated: " + new Date().toLocaleString(), 135, 25);
-
-        doc.setTextColor(15, 23, 42);
-        doc.setFontSize(18); doc.setFont('Helvetica', 'bold');
-        doc.text("BAO CAO DOANH THU CHI TIET", 15, 52);
-        doc.setFontSize(10); doc.setFont('Helvetica', 'normal');
-        doc.setTextColor(100, 116, 139);
-        doc.text("Ky bao cao: " + removeVietnameseTones(currentPeriodText), 15, 59);
-
         const avg = currentReportData.totalBookings > 0 ? Math.round(currentReportData.totalRevenue / currentReportData.totalBookings) : 0;
-        doc.setFont('Helvetica', 'bold'); doc.setTextColor(15, 23, 42);
-        doc.text("CHI SO TOM TAT (KPI):", 15, 72);
-        doc.setFont('Helvetica', 'normal'); doc.setFontSize(10);
-        doc.text("1. Tong so ve ban ra: " + currentReportData.totalBookings + " ve", 20, 80);
-        doc.text("2. Tong doanh thu thuc te: " + fmtMoney(currentReportData.totalRevenue), 20, 86);
-        doc.text("3. Gia tri ve trung binh: " + fmtMoney(avg), 20, 92);
+        const now = new Date().toLocaleString('vi-VN');
 
-        let currentY = 100;
+        // Tạo HTML ẩn chứa nội dung báo cáo tiếng Việt đầy đủ dấu
+        const wrapper = document.createElement('div');
+        wrapper.id = 'pdf-render-area';
+        wrapper.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;background:#fff;padding:0;font-family:Inter,Arial,sans-serif;color:#0f172a;z-index:-1;';
+
+        let bookingRows = '';
+        (currentReportData.bookings || []).forEach((b, i) => {
+            bookingRows += `<tr style="background:${i % 2 === 0 ? '#fff' : '#f8fafc'}">
+                <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-family:monospace;font-size:12px">${b.bookingCode}</td>
+                <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:12px">${fmtDateTime(b.createdAt)}</td>
+                <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:600">${b.customerName}</td>
+                <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:12px">${b.movieTitle}</td>
+                <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:12px">${b.roomName}</td>
+                <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;font-weight:700;color:#10b981">${fmtMoney(b.finalAmount)}</td>
+            </tr>`;
+        });
+
+        // Lấy ảnh biểu đồ
+        let chartImgTag = '';
         const chartCanvas = document.getElementById('reportRevenueChart');
         if (chartCanvas) {
             const chartImg = chartCanvas.toDataURL('image/png', 1.0);
-            doc.setFont('Helvetica', 'bold');
-            doc.text("BIEU DO DOANH THU:", 15, 102);
-            doc.addImage(chartImg, 'PNG', 15, 106, 180, 70);
-            currentY = 184;
+            chartImgTag = `<img src="${chartImg}" style="width:100%;height:auto;border-radius:8px;margin-top:8px">`;
         }
 
-        const tableBody = (currentReportData.bookings || []).map(b => [
-            b.bookingCode, fmtDateTime(b.createdAt), removeVietnameseTones(b.customerName),
-            removeVietnameseTones(b.movieTitle), removeVietnameseTones(b.roomName), fmtMoney(b.finalAmount)
-        ]);
-        doc.setFont('Helvetica', 'bold'); doc.setFontSize(11);
-        doc.text("DANH SACH GIAO DICH CHI TIET:", 15, currentY);
-        doc.autoTable({
-            startY: currentY + 4,
-            head: [['Ma ve', 'Ngay mua', 'Khach hang', 'Phim', 'Phong', 'Doanh thu']],
-            body: tableBody,
-            styles: { font: 'Helvetica', fontSize: 9 },
-            headStyles: { fillColor: [79, 70, 229] },
-            columnStyles: { 5: { halign: 'right', fontStyle: 'bold' } }
+        wrapper.innerHTML = `
+            <!-- Header -->
+            <div style="background:linear-gradient(135deg,#4f46e5,#6366f1);padding:28px 32px;color:#fff">
+                <div style="font-size:26px;font-weight:800;letter-spacing:1px">CINEMA 8 STAR</div>
+                <div style="font-size:13px;opacity:0.85;margin-top:4px">Hệ thống Rạp chiếu phim hiện đại & Tự động</div>
+                <div style="font-size:11px;opacity:0.7;margin-top:4px">Ngày xuất báo cáo: ${now}</div>
+            </div>
+
+            <!-- Tiêu đề -->
+            <div style="padding:28px 32px 0">
+                <div style="font-size:22px;font-weight:800;color:#1e293b;margin-bottom:4px">BÁO CÁO DOANH THU CHI TIẾT</div>
+                <div style="font-size:13px;color:#64748b;margin-bottom:24px">Kỳ báo cáo: ${currentPeriodText}</div>
+
+                <!-- KPI Cards -->
+                <div style="display:flex;gap:16px;margin-bottom:24px">
+                    <div style="flex:1;background:#f0f9ff;border-radius:10px;padding:16px 20px;border-left:4px solid #6366f1">
+                        <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Tổng số vé bán ra</div>
+                        <div style="font-size:24px;font-weight:800;color:#1e293b;margin-top:4px">${currentReportData.totalBookings} vé</div>
+                    </div>
+                    <div style="flex:1;background:#f0fdf4;border-radius:10px;padding:16px 20px;border-left:4px solid #10b981">
+                        <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Tổng doanh thu thực tế</div>
+                        <div style="font-size:24px;font-weight:800;color:#10b981;margin-top:4px">${fmtMoney(currentReportData.totalRevenue)}</div>
+                    </div>
+                    <div style="flex:1;background:#fffbeb;border-radius:10px;padding:16px 20px;border-left:4px solid #f59e0b">
+                        <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Giá trị trung bình mỗi vé</div>
+                        <div style="font-size:24px;font-weight:800;color:#f59e0b;margin-top:4px">${fmtMoney(avg)}</div>
+                    </div>
+                </div>
+
+                <!-- Biểu đồ -->
+                <div style="margin-bottom:24px">
+                    <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:8px">
+                        Biểu đồ doanh thu
+                    </div>
+                    ${chartImgTag}
+                </div>
+
+                <!-- Bảng giao dịch -->
+                <div style="margin-bottom:24px">
+                    <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:12px">
+                        Danh sách giao dịch chi tiết
+                    </div>
+                    <table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden">
+                        <thead>
+                            <tr style="background:#4f46e5;color:#fff">
+                                <th style="padding:10px 10px;text-align:left;font-size:12px;font-weight:700">Mã vé</th>
+                                <th style="padding:10px 10px;text-align:left;font-size:12px;font-weight:700">Ngày mua</th>
+                                <th style="padding:10px 10px;text-align:left;font-size:12px;font-weight:700">Khách hàng</th>
+                                <th style="padding:10px 10px;text-align:left;font-size:12px;font-weight:700">Phim</th>
+                                <th style="padding:10px 10px;text-align:left;font-size:12px;font-weight:700">Phòng</th>
+                                <th style="padding:10px 10px;text-align:right;font-size:12px;font-weight:700">Doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>${bookingRows}</tbody>
+                        <tfoot>
+                            <tr style="background:#eef2ff">
+                                <td colspan="5" style="padding:10px;font-weight:800;font-size:13px;color:#1e293b">TỔNG CỘNG DOANH THU</td>
+                                <td style="padding:10px;text-align:right;font-weight:800;font-size:14px;color:#10b981">${fmtMoney(currentReportData.totalRevenue)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Footer -->
+                <div style="text-align:center;padding:16px 0;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:11px">
+                    Cinema 8 Star &mdash; Báo cáo được tạo tự động bởi hệ thống quản trị
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(wrapper);
+
+        // Dùng html2canvas để render toàn bộ nội dung (giữ dấu tiếng Việt)
+        const canvas = await html2canvas(wrapper, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
         });
 
-        const safeName = removeVietnameseTones(currentPeriodText).replace(/\s+/g, '-').toLowerCase();
-        doc.save(`bao-cao-doanh-thu-${safeName}.pdf`);
+        document.body.removeChild(wrapper);
+
+        // Chuyển canvas thành PDF
+        const { jsPDF } = window.jspdf;
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 210; // A4 width mm
+        const pageHeight = 297; // A4 height mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        const doc = new jsPDF('p', 'mm', 'a4');
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+            position = -(pageHeight * (Math.ceil(imgHeight / pageHeight) - Math.ceil(heightLeft / pageHeight)));
+            doc.addPage();
+            doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        const safeName = currentPeriodText.replace(/\s+/g, '-').toLowerCase().replace(/[^a-z0-9\-àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/g, '');
+        doc.save(`bao-cao-doanh-thu-${safeName || 'report'}.pdf`);
         showToast('Xuất báo cáo PDF thành công!', 'success');
     } catch(err) {
-        console.error('PDF export error:', err);
+        console.error('Lỗi xuất PDF:', err);
         showToast('Lỗi khi tạo tệp PDF', 'error');
     }
 }
