@@ -49,11 +49,20 @@ async function renderHome(app) {
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
             
-            const newlyAdded = movies.filter(m => {
+            let newlyAdded = movies.filter(m => {
                 if (!m.createdAt) return false;
                 const createdDate = new Date(m.createdAt);
                 return createdDate >= sevenDaysAgo;
             });
+
+            // Nếu không có phim nào mới thêm trong 7 ngày, chọn ra 5 phim mới nhất trong hệ thống để làm slide giới thiệu
+            if (newlyAdded.length === 0 && movies.length > 0) {
+                newlyAdded = [...movies].sort((a, b) => {
+                    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+                    return dateB - dateA || b.id - a.id;
+                }).slice(0, 5);
+            }
 
             // Cập nhật phần Hero
             const heroPlaceholder = document.getElementById('hero-section-placeholder');

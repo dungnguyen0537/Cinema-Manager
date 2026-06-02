@@ -4,10 +4,17 @@ let currentReportData = null;
 let currentPeriodText = "Tháng này";
 
 async function renderReportsPage(container) {
+    const now = new Date();
+    const greeting = now.getHours() < 12 ? 'Chào buổi sáng' : now.getHours() < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
+
     container.innerHTML = `
-        <div class="page-header">
-            <div class="page-title">Báo cáo doanh thu & Phân tích</div>
-            <div class="header-actions" style="display: flex; gap: 12px;">
+        <!-- Welcome Banner & Export Actions -->
+        <div class="dash-welcome" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div class="dash-welcome-text">
+                <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">${greeting}, Quản trị viên</h2>
+                <p style="color: var(--text-secondary); font-size: 0.95rem;">Hệ thống phân tích doanh thu & hoạt động Cinema 8 Star</p>
+            </div>
+            <div class="header-actions" style="display: flex; gap: 12px; align-items: center;">
                 <button class="btn-primary" id="btn-export-pdf" onclick="exportReportToPDF()" style="background: linear-gradient(135deg, #ef4444, #b91c1c);">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                     Xuất PDF
