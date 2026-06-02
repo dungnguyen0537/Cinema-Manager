@@ -85,7 +85,7 @@ async function renderDashboard(container) {
                 <div class="dash-card-header">
                     <div>
                         <h3 class="dash-card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Biểu đồ doanh thu</h3>
-                        <p class="dash-card-subtitle">Doanh thu theo ngày trong ${monthNames[now.getMonth()]} ${now.getFullYear()}</p>
+                        <p class="dash-card-subtitle">Doanh thu 30 ngày gần nhất (liên tục qua các tháng)</p>
                     </div>
                     <div class="dash-chart-legend">
                         <span class="dash-legend-dot"></span> Doanh thu (VNĐ)

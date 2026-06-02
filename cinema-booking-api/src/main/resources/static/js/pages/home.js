@@ -1,5 +1,6 @@
 /* Trang Chủ */
 let heroCarouselTimer = null;
+let currentHeroSlideIdx = 0;
 
 async function renderHome(app) {
     app.innerHTML = `
@@ -108,20 +109,8 @@ async function renderHome(app) {
                     `;
 
                     // Khởi động auto-slide
-                    let currentSlide = 0;
-                    heroCarouselTimer = setInterval(() => {
-                        const slides = document.querySelectorAll('.hero-slide');
-                        const indicators = document.querySelectorAll('.indicator-dot');
-                        if (slides.length <= 1) return;
-
-                        slides[currentSlide].classList.remove('active');
-                        if (indicators[currentSlide]) indicators[currentSlide].classList.remove('active');
-
-                        currentSlide = (currentSlide + 1) % slides.length;
-
-                        slides[currentSlide].classList.add('active');
-                        if (indicators[currentSlide]) indicators[currentSlide].classList.add('active');
-                    }, 5000);
+                    currentHeroSlideIdx = 0;
+                    startHeroCarousel();
                 }
             }
 
@@ -153,6 +142,29 @@ function switchHeroSlide(idx) {
     
     slides[idx].classList.add('active');
     indicators[idx].classList.add('active');
+    currentHeroSlideIdx = idx;
+    
+    // Khởi động lại timer để không bị trôi slide ngay lập tức sau khi nhấn
+    if (heroCarouselTimer) {
+        clearInterval(heroCarouselTimer);
+        startHeroCarousel();
+    }
+}
+
+function startHeroCarousel() {
+    heroCarouselTimer = setInterval(() => {
+        const slides = document.querySelectorAll('.hero-slide');
+        const indicators = document.querySelectorAll('.indicator-dot');
+        if (slides.length <= 1) return;
+
+        slides[currentHeroSlideIdx].classList.remove('active');
+        if (indicators[currentHeroSlideIdx]) indicators[currentHeroSlideIdx].classList.remove('active');
+
+        currentHeroSlideIdx = (currentHeroSlideIdx + 1) % slides.length;
+
+        slides[currentHeroSlideIdx].classList.add('active');
+        if (indicators[currentHeroSlideIdx]) indicators[currentHeroSlideIdx].classList.add('active');
+    }, 5000);
 }
 
 function movieCard(movie) {

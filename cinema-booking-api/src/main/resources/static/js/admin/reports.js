@@ -7,10 +7,14 @@ async function renderReportsPage(container) {
     container.innerHTML = `
         <div class="page-header">
             <div class="page-title">Báo cáo doanh thu & Phân tích</div>
-            <div class="header-actions">
-                <button class="btn-primary" id="btn-export-pdf" onclick="exportReportToPDF()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:6px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                    Xuất báo cáo PDF
+            <div class="header-actions" style="display: flex; gap: 12px;">
+                <button class="btn-primary" id="btn-export-pdf" onclick="exportReportToPDF()" style="background: linear-gradient(135deg, #ef4444, #b91c1c);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Xuất PDF
+                </button>
+                <button class="btn-primary" id="btn-export-excel" onclick="exportReportToExcel()" style="background: linear-gradient(135deg, #10b981, #047857);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:6px"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>
+                    Xuất Excel
                 </button>
             </div>
         </div>
@@ -481,5 +485,107 @@ function exportReportToPDF() {
     } catch(err) {
         console.error('Lỗi xuất PDF:', err);
         showToast('Lỗi khi tạo và xuất tệp PDF', 'error');
+    }
+}
+
+// Xuất báo cáo doanh thu ra Excel (.xlsx) sử dụng thư viện SheetJS (XLSX)
+function exportReportToExcel() {
+    if (!currentReportData) {
+        showToast('Chưa có dữ liệu để xuất báo cáo', 'warning');
+        return;
+    }
+
+    try {
+        const wb = XLSX.utils.book_new();
+        
+        // 1. Sheet 1: Dữ liệu chi tiết giao dịch
+        const wsData = [
+            ["BÁO CÁO DOANH THU CHI TIẾT - CINEMA 8 STAR"],
+            [`Kỳ báo cáo: ${currentPeriodText}`],
+            [`Ngày xuất báo cáo: ${new Date().toLocaleString('vi-VN')}`],
+            [],
+            ["TÓM TẮT CHỈ SỐ DOANH THU (KPI)"],
+            ["Tổng số vé bán ra", `${currentReportData.totalBookings} vé`],
+            ["Tổng doanh thu thực tế", `${currentReportData.totalRevenue} VND`],
+            ["Giá trị trung bình mỗi vé", `${currentReportData.totalBookings > 0 ? Math.round(currentReportData.totalRevenue / currentReportData.totalBookings) : 0} VND`],
+            [],
+            ["Mã vé", "Ngày mua", "Khách hàng", "Phim", "Phòng chiếu", "Suất chiếu", "Doanh thu (VND)"]
+        ];
+
+        (currentReportData.bookings || []).forEach(b => {
+            wsData.push([
+                b.bookingCode,
+                fmtDateTime(b.createdAt),
+                b.customerName,
+                b.movieTitle,
+                b.roomName,
+                fmtDateTime(b.showtimeStart),
+                b.finalAmount
+            ]);
+        });
+
+        // Thêm dòng trống và dòng tổng cộng doanh thu
+        wsData.push([]);
+        wsData.push(["TỔNG CỘNG DOANH THU", "", "", "", "", "", currentReportData.totalRevenue]);
+
+        // Tạo sheet từ mảng dữ liệu
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+        // Thiết lập độ rộng cột cho đẹp mắt và không bị che khuất chữ
+        const colWidths = [
+            { wch: 15 }, // Mã vé
+            { wch: 22 }, // Ngày mua
+            { wch: 24 }, // Khách hàng
+            { wch: 32 }, // Phim
+            { wch: 15 }, // Phòng
+            { wch: 22 }, // Suất chiếu
+            { wch: 18 }  // Doanh thu
+        ];
+        ws['!cols'] = colWidths;
+
+        XLSX.utils.book_append_sheet(wb, ws, "Chi tiết doanh thu");
+
+        // 2. Sheet 2: Doanh thu gom nhóm theo từng tháng
+        const monthlySummaryEl = document.querySelector('#monthly-summary table tbody');
+        if (monthlySummaryEl) {
+            const monthlyRows = [
+                ["BÁO CÁO DOANH THU THEO TỪNG THÁNG"],
+                [`Ngày xuất báo cáo: ${new Date().toLocaleString('vi-VN')}`],
+                [],
+                ["Tháng", "Số vé bán", "Doanh thu (VND)"]
+            ];
+            
+            const rows = monthlySummaryEl.querySelectorAll('tr');
+            rows.forEach(r => {
+                const cols = r.querySelectorAll('td');
+                if (cols.length >= 3) {
+                    const monthText = cols[0].textContent.trim();
+                    const ticketsText = cols[1].textContent.trim().replace(' vé', '').replace(/\./g, '');
+                    const revText = cols[2].textContent.trim().replace('đ', '').replace(/\./g, '').replace(/\s/g, '');
+                    
+                    monthlyRows.push([
+                        monthText,
+                        parseInt(ticketsText) || 0,
+                        parseInt(revText) || 0
+                    ]);
+                }
+            });
+            
+            const wsMonthly = XLSX.utils.aoa_to_sheet(monthlyRows);
+            wsMonthly['!cols'] = [
+                { wch: 15 }, // Tháng
+                { wch: 15 }, // Số vé
+                { wch: 20 }  // Doanh thu
+            ];
+            XLSX.utils.book_append_sheet(wb, wsMonthly, "Doanh thu theo tháng");
+        }
+
+        // Tải xuống file Excel
+        const safePeriodName = removeVietnameseTones(currentPeriodText).replace(/\s+/g, '-').toLowerCase();
+        XLSX.writeFile(wb, `bao-cao-doanh-thu-${safePeriodName}.xlsx`);
+        showToast('Xuất báo cáo Excel thành công!', 'success');
+    } catch(err) {
+        console.error('Lỗi xuất Excel:', err);
+        showToast('Lỗi khi tạo và xuất tệp Excel', 'error');
     }
 }

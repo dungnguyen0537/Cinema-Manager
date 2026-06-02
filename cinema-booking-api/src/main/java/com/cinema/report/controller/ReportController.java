@@ -38,17 +38,28 @@ public class ReportController {
         BigDecimal monthlyRevenue = bookingDao.sumRevenueBetween(startOfMonth, now);
         long dailyBookings = bookingDao.countCompletedBetween(startOfDay, now);
 
-        // Chart data for days in current month
+        // Chart data for the last 30 days continuously to prevent resetting when a new month starts
         List<Map<String, Object>> chartData = new ArrayList<>();
-        int currentDay = now.getDayOfMonth();
-        for (int i = 1; i <= currentDay; i++) {
-            LocalDateTime dayStart = now.withDayOfMonth(i).toLocalDate().atStartOfDay();
-            LocalDateTime dayEnd = dayStart.plusDays(1).minusNanos(1);
-            BigDecimal revenue = bookingDao.sumRevenueBetween(dayStart, dayEnd);
-            chartData.add(Map.of(
-                "label", "Ng\u00e0y " + i,
-                "revenue", revenue != null ? revenue : 0
-            ));
+        LocalDateTime thirtyDaysAgo = now.minusDays(29).toLocalDate().atStartOfDay();
+        
+        List<Map<String, Object>> rawChartData = bookingDao.getDailyRevenueBetween(thirtyDaysAgo, now);
+        Map<String, BigDecimal> revenueMap = new HashMap<>();
+        for (Map<String, Object> item : rawChartData) {
+            String dateStr = item.get("date").toString();
+            revenueMap.put(dateStr, (BigDecimal) item.get("revenue"));
+        }
+        
+        for (int i = 29; i >= 0; i--) {
+            java.time.LocalDate d = now.minusDays(i).toLocalDate();
+            String dStr = d.toString();
+            BigDecimal rev = revenueMap.getOrDefault(dStr, BigDecimal.ZERO);
+            
+            String label = String.format("%02d/%02d", d.getDayOfMonth(), d.getMonthValue());
+            Map<String, Object> m = new HashMap<>();
+            m.put("label", label);
+            m.put("date", dStr);
+            m.put("revenue", rev != null ? rev : BigDecimal.ZERO);
+            chartData.add(m);
         }
 
         Map<String, Object> summary = new HashMap<>();
