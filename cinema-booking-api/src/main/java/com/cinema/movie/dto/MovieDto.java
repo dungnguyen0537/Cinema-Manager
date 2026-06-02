@@ -27,4 +27,5 @@ public class MovieDto {
     private LocalDate releaseDate;
     private String status;
     private Set<String> genres;
+    private java.time.LocalDateTime createdAt;
 }

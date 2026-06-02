@@ -23,6 +23,11 @@ public class MovieRowMapper implements RowMapper<MovieEntity> {
         if (rs.getDate("release_date") != null)
             entity.setReleaseDate(rs.getDate("release_date").toLocalDate());
         entity.setStatus(rs.getString("status"));
+        if (rs.getTimestamp("created_at") != null)
+            entity.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+        if (rs.getTimestamp("updated_at") != null)
+            entity.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
+        entity.setCreatedBy(rs.getString("created_by"));
         return entity;
     }
 }

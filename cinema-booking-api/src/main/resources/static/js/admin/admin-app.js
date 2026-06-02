@@ -2,6 +2,7 @@
 
 const ADMIN_PAGES = {
     dashboard: { title: 'Tổng quan & Doanh thu', render: 'renderDashboard' },
+    reports: { title: 'Báo cáo doanh thu', render: 'renderReportsPage' },
     movies: { title: 'Quản lý phim', render: 'renderMoviesPage' },
     cinemas: { title: 'Quản lý rạp', render: 'renderCinemasPage' },
     showtimes: { title: 'Quản lý lịch chiếu', render: 'renderShowtimesPage' },

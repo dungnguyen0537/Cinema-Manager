@@ -1082,3 +1082,123 @@ tbody td:first-child { color: var(--text); font-weight: 500; }
     outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
+
+/* ======= REPORT STYLES ======= */
+.filter-container-card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 20px;
+}
+.filter-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.filter-presets {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.btn-filter-preset {
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.btn-filter-preset:hover {
+    color: var(--text);
+    border-color: var(--primary);
+    background: var(--surface-hover);
+}
+.btn-filter-preset.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+.filter-custom-dates {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    animation: fadeIn 200ms ease;
+}
+.date-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.date-input-group label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+.date-input-group input[type="date"] {
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    color: var(--text);
+    font-size: 0.82rem;
+    outline: none;
+    transition: border-color var(--transition);
+}
+.date-input-group input[type="date"]:focus {
+    border-color: var(--primary);
+}
+.report-table-row {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr;
+    gap: 24px;
+}
+@media (max-width: 1024px) {
+    .report-table-row {
+        grid-template-columns: 1fr;
+    }
+}
+.badge {
+    font-variant-numeric: tabular-nums;
+}
+.kpi-card.info {
+    border-left: 4px solid #6366f1;
+}
+.kpi-card.success {
+    border-left: 4px solid #10b981;
+}
+.kpi-card.warning {
+    border-left: 4px solid #f59e0b;
+}
+.kpi-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--si-color) 12%, transparent);
+    color: var(--si-color);
+}
+.kpi-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.kpi-card {
+    padding: 16px 20px;
+    align-items: center;
+}
+.text-success {
+    color: #10b981 !important;
+}
+

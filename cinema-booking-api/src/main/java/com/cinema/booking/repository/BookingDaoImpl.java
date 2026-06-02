@@ -268,4 +268,54 @@ public class BookingDaoImpl implements BookingDao {
         }
         b.setBookingSeats(seats);
     }
+
+    @Override
+    public List<java.util.Map<String, Object>> getDailyRevenueBetween(LocalDateTime start, LocalDateTime end) {
+        String sql = "SELECT DATE_TRUNC('day', created_at) as booking_date, COALESCE(SUM(final_amount), 0) as revenue, COUNT(*) as booking_count " +
+                "FROM bookings " +
+                "WHERE status IN ('CONFIRMED', 'COMPLETED') AND created_at >= :start AND created_at <= :end " +
+                "GROUP BY DATE_TRUNC('day', created_at) " +
+                "ORDER BY booking_date ASC";
+        MapSqlParameterSource p = new MapSqlParameterSource();
+        p.addValue("start", start);
+        p.addValue("end", end);
+        return jdbcTemplate.query(sql, p, (rs, rowNum) -> {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("date", rs.getTimestamp("booking_date").toLocalDateTime().toLocalDate().toString());
+            map.put("revenue", rs.getBigDecimal("revenue"));
+            map.put("count", rs.getLong("booking_count"));
+            return map;
+        });
+    }
+
+    @Override
+    public List<java.util.Map<String, Object>> getMonthlyRevenue() {
+        String sql = "SELECT DATE_TRUNC('month', created_at) as booking_month, COALESCE(SUM(final_amount), 0) as revenue, COUNT(*) as booking_count " +
+                "FROM bookings " +
+                "WHERE status IN ('CONFIRMED', 'COMPLETED') " +
+                "GROUP BY DATE_TRUNC('month', created_at) " +
+                "ORDER BY booking_month DESC";
+        return jdbcTemplate.query(sql, new MapSqlParameterSource(), (rs, rowNum) -> {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            java.time.LocalDate date = rs.getTimestamp("booking_month").toLocalDateTime().toLocalDate();
+            String formattedMonth = String.format("Tháng %02d/%d", date.getMonthValue(), date.getYear());
+            map.put("month", formattedMonth);
+            map.put("revenue", rs.getBigDecimal("revenue"));
+            map.put("count", rs.getLong("booking_count"));
+            return map;
+        });
+    }
+
+    @Override
+    public List<BookingEntity> findBookingsBetween(LocalDateTime start, LocalDateTime end) {
+        String sql = "SELECT * FROM bookings " +
+                "WHERE status IN ('CONFIRMED', 'COMPLETED') AND created_at >= :start AND created_at <= :end " +
+                "ORDER BY created_at DESC";
+        MapSqlParameterSource p = new MapSqlParameterSource();
+        p.addValue("start", start);
+        p.addValue("end", end);
+        List<BookingEntity> list = jdbcTemplate.query(sql, p, rowMapper);
+        list.forEach(this::populateAssociations);
+        return list;
+    }
 }

@@ -192,30 +192,31 @@ function renderRevenueChart(chartData) {
 
     const context = ctx.getContext('2d');
 
-    // Hiệu ứng Gradient cho các cột của biểu đồ (Bar chart)
-    const barGrad = context.createLinearGradient(0, 0, 0, 300);
-    barGrad.addColorStop(0, isDark ? '#818cf8' : '#6366f1');
-    barGrad.addColorStop(1, isDark ? '#4f46e5' : '#4338ca');
-
-    // Hiệu ứng Gradient khi di chuột (hover) vào cột
-    const hoverGrad = context.createLinearGradient(0, 0, 0, 300);
-    hoverGrad.addColorStop(0, '#a5b4fc');
-    hoverGrad.addColorStop(1, '#6366f1');
+    // Hiệu ứng Gradient cho vùng dưới đường biểu đồ (Line chart)
+    const lineGrad = context.createLinearGradient(0, 0, 0, 300);
+    lineGrad.addColorStop(0, isDark ? 'rgba(99, 102, 241, 0.4)' : 'rgba(99, 102, 241, 0.25)');
+    lineGrad.addColorStop(1, 'rgba(99, 102, 241, 0)');
 
     new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: chartData.map(d => d.label),
             datasets: [{
                 label: 'Doanh thu',
                 data: chartData.map(d => d.revenue),
-                backgroundColor: barGrad,
-                hoverBackgroundColor: hoverGrad,
-                borderWidth: 0,
-                borderRadius: { topLeft: 8, topRight: 8 },
-                borderSkipped: false,
-                barPercentage: 0.55,
-                categoryPercentage: 0.75,
+                borderColor: '#6366f1',
+                borderWidth: 3,
+                tension: 0.35,
+                fill: true,
+                backgroundColor: lineGrad,
+                pointBackgroundColor: '#6366f1',
+                pointBorderColor: isDark ? '#0a0a0c' : '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointHoverBorderWidth: 3,
+                pointHoverBackgroundColor: '#6366f1',
+                pointHoverBorderColor: '#ffffff',
             }]
         },
         options: {

@@ -23,4 +23,7 @@ public interface BookingDao {
     BigDecimal sumRevenueBetween(LocalDateTime start, LocalDateTime end);
     long countCompletedBetween(LocalDateTime start, LocalDateTime end);
     Page<BookingEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    List<java.util.Map<String, Object>> getDailyRevenueBetween(LocalDateTime start, LocalDateTime end);
+    List<java.util.Map<String, Object>> getMonthlyRevenue();
+    List<BookingEntity> findBookingsBetween(LocalDateTime start, LocalDateTime end);
 }

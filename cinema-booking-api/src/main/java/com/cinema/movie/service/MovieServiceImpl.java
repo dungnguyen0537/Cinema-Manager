@@ -133,6 +133,7 @@ public class MovieServiceImpl implements MovieService {
                 .releaseDate(movie.getReleaseDate())
                 .status(movie.getStatus())
                 .genres(movie.getGenres().stream().map(GenreEntity::getName).collect(Collectors.toSet()))
+                .createdAt(movie.getCreatedAt())
                 .build();
     }
 }

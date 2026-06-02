@@ -19,25 +19,25 @@ async function renderBooking(app) {
                 <p style="color:var(--text-muted);margin-bottom:24px">Mã đơn: <strong style="color:var(--accent)">${booking.bookingCode}</strong></p>
 
                 <div class="payment-info">
-                    <div class="summary-row"><span>\ud83c\udfac Phim</span><span>${booking.movieTitle || ''}</span></div>
-                    <div class="summary-row"><span>\ud83c\udfdb\ufe0f R\u1ea1p</span><span>${booking.cinemaName || ''}</span></div>
-                    <div class="summary-row"><span>\ud83c\udfa6 Ph\u00f2ng</span><span>${booking.roomName || ''}</span></div>
-                    <div class="summary-row"><span>\ud83d\udcc5 Su\u1ea5t chi\u1ebfu</span><span>${booking.showtimeStart ? formatDateTime(booking.showtimeStart) : ''}</span></div>
-                    <div class="summary-row"><span>\ud83d\udcba Gh\u1ebf</span><span>${seats}</span></div>
+                    <div class="summary-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg> Phim</span><span>${booking.movieTitle || ''}</span></div>
+                    <div class="summary-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Rạp</span><span>${booking.cinemaName || ''}</span></div>
+                    <div class="summary-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon"><rect width="20" height="15" x="2" y="3" rx="2"/><path d="M12 18v4"/><path d="M8 21h8"/></svg> Phòng</span><span>${booking.roomName || ''}</span></div>
+                    <div class="summary-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Suất chiếu</span><span>${booking.showtimeStart ? formatDateTime(booking.showtimeStart) : ''}</span></div>
+                    <div class="summary-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Ghế</span><span>${seats}</span></div>
                     <hr style="border-color:var(--border);margin:12px 0">
-                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">\ud83d\udcb3 Chi ti\u1ebft gi\u00e1 v\u00e9</div>
+                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline-icon" style="vertical-align:-2px"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Chi tiết giá vé</div>
                     ${(booking.seats || []).map(s => {
                         const seatLabel = s.rowName + s.seatNumber;
                         const typeMap = {VIP: 'VIP x1.5', PREMIUM: 'Premium x1.8', COUPLE: 'Couple x2.0', STANDARD: 'Standard'};
                         const typeLabel = typeMap[s.seatType] || s.seatType;
-                        return '<div class="summary-row" style="font-size:0.85rem"><span>\ud83c\udfab ' + seatLabel + ' <span style="opacity:0.6;font-size:0.78rem">(' + typeLabel + ')</span></span><span>' + formatMoney(s.price || 0) + '</span></div>';
+                        return '<div class="summary-row" style="font-size:0.85rem"><span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline-icon"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg> ' + seatLabel + ' <span style="opacity:0.6;font-size:0.78rem">(' + typeLabel + ')</span></span><span>' + formatMoney(s.price || 0) + '</span></div>';
                     }).join('')}
                     <hr style="border-color:var(--border);margin:12px 0">
-                    <div class="summary-row"><span>T\u1ea1m t\u00ednh</span><span>${formatMoney(booking.totalAmount || 0)}</span></div>
-                    ${booking.discountAmount > 0 ? '<div class="summary-row"><span>\ud83c\udff7\ufe0f Gi\u1ea3m gi\u00e1 (' + (booking.promotionCode || 'Promo') + ')</span><span style="color:var(--green)">-' + formatMoney(booking.discountAmount) + '</span></div>' : ''}
-                    <div class="summary-row" style="font-size:0.82rem;color:var(--text-muted)"><span>\ud83c\udfdb\ufe0f Ph\u00ed d\u1ecbch v\u1ee5</span><span style="color:var(--green)">Mi\u1ec5n ph\u00ed</span></div>
-                    <div class="summary-row" style="font-size:0.82rem;color:var(--text-muted)"><span>\ud83d\udcb0 VAT (10%)</span><span>\u0110\u00e3 bao g\u1ed3m</span></div>
-                    <div class="summary-row total"><span>T\u1ed5ng thanh to\u00e1n</span><span class="amount">${formatMoney(booking.finalAmount || booking.totalAmount || 0)}</span></div>
+                    <div class="summary-row"><span>Tạm tính</span><span>${formatMoney(booking.totalAmount || 0)}</span></div>
+                    ${booking.discountAmount > 0 ? '<div class="summary-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Giảm giá (' + (booking.promotionCode || 'Promo') + ')</span><span style="color:var(--green)">-' + formatMoney(booking.discountAmount) + '</span></div>' : ''}
+                    <div class="summary-row" style="font-size:0.82rem;color:var(--text-muted)"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Phí dịch vụ</span><span style="color:var(--green)">Miễn phí</span></div>
+                    <div class="summary-row" style="font-size:0.82rem;color:var(--text-muted)"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> VAT (10%)</span><span>Đã bao gồm</span></div>
+                    <div class="summary-row total"><span>Tổng thanh toán</span><span class="amount">${formatMoney(booking.finalAmount || booking.totalAmount || 0)}</span></div>
                 </div>
 
                 ${booking.status === 'HOLDING' ? `
@@ -177,13 +177,13 @@ async function checkPaymentStatus(bookingId, isManual = false) {
                 }
             } catch(e) { /* fallback below */ }
 
-            showToast('Thanh to\u00e1n th\u00e0nh c\u00f4ng! \ud83c\udf89', 'success');
+            showToast('Thanh toán thành công!', 'success');
             navigate('/booking', { bookingId });
         } else {
-            if (isManual) showToast('Ch\u01b0a nh\u1eadn \u0111\u01b0\u1ee3c thanh to\u00e1n. Vui l\u00f2ng \u0111\u1ee3i...', 'info');
+            if (isManual) showToast('Chưa nhận được thanh toán. Vui lòng đợi...', 'info');
         }
     } catch (err) {
-        if (isManual) showToast('\u0110ang ki\u1ec3m tra...', 'info');
+        if (isManual) showToast('Đang kiểm tra...', 'info');
     }
 }
 
@@ -197,19 +197,19 @@ function showSuccessPopup(booking) {
     overlay.className = 'success-overlay';
     overlay.innerHTML = `
         <div class="success-popup">
-            <div class="success-icon">\ud83c\udf89</div>
-            <h2>Thanh to\u00e1n th\u00e0nh c\u00f4ng!</h2>
-            <p class="sub">Ch\u00fac b\u1ea1n xem phim vui v\u1ebb \ud83c\udf7f</p>
+            <div class="success-icon"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+            <h2>Thanh toán thành công!</h2>
+            <p class="sub">Chúc bạn xem phim vui vẻ!</p>
             <div class="success-ticket-info">
-                <div class="info-row"><span>\ud83c\udfac Phim</span><strong>${booking.movieTitle || ''}</strong></div>
-                <div class="info-row"><span>\ud83c\udfdb\ufe0f R\u1ea1p</span><strong>${booking.cinemaName || ''}</strong></div>
-                <div class="info-row"><span>\ud83c\udfa6 Ph\u00f2ng</span><strong>${booking.roomName || ''}</strong></div>
-                <div class="info-row"><span>\ud83d\udcc5 Su\u1ea5t</span><strong>${booking.showtimeStart ? formatDateTime(booking.showtimeStart) : ''}</strong></div>
-                <div class="info-row"><span>\ud83d\udcba Gh\u1ebf</span><strong>${seats}</strong></div>
-                <div class="info-row"><span>\ud83c\udff7\ufe0f M\u00e3 v\u00e9</span><strong style="color:var(--accent)">${booking.bookingCode}</strong></div>
-                <div class="info-row highlight"><span>T\u1ed5ng thanh to\u00e1n</span><strong>${amount}</strong></div>
+                <div class="info-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg> Phim</span><strong>${booking.movieTitle || ''}</strong></div>
+                <div class="info-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline-icon"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Rạp</span><strong>${booking.cinemaName || ''}</strong></div>
+                <div class="info-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline-icon"><rect width="20" height="15" x="2" y="3" rx="2"/><path d="M12 18v4"/><path d="M8 21h8"/></svg> Phòng</span><strong>${booking.roomName || ''}</strong></div>
+                <div class="info-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline-icon"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Suất</span><strong>${booking.showtimeStart ? formatDateTime(booking.showtimeStart) : ''}</strong></div>
+                <div class="info-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Ghế</span><strong>${seats}</strong></div>
+                <div class="info-row"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Mã vé</span><strong style="color:var(--accent)">${booking.bookingCode}</strong></div>
+                <div class="info-row highlight"><span>Tổng thanh toán</span><strong>${amount}</strong></div>
             </div>
-            <button class="btn btn-primary btn-lg" style="width:100%" onclick="document.querySelector('.success-overlay').remove(); navigate('/my-tickets')">\ud83c\udf9f\ufe0f Xem v\u00e9 c\u1ee7a t\u00f4i</button>
+            <button class="btn btn-primary btn-lg" style="width:100%" onclick="document.querySelector('.success-overlay').remove(); navigate('/my-tickets')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:6px"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg> Xem vé của tôi</button>
         </div>
     `;
     document.body.appendChild(overlay);

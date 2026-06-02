@@ -161,7 +161,7 @@ async function holdSeats(showtimeId) {
         });
 
         if (res && res.data) {
-            showToast('Giữ ghế thành công! ⏰ Bạn có 10 phút', 'success');
+            showToast('Giữ ghế thành công! Bạn có 10 phút để thanh toán', 'success');
             navigate('/booking', { bookingId: res.data.id });
         }
     } catch (err) {

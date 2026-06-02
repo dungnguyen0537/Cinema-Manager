@@ -59,6 +59,85 @@ public class ReportController {
         summary.put("dailyBookings", dailyBookings);
         summary.put("chartData", chartData);
 
+        // Also add total payments for backwards compatibility
+        summary.put("totalPayments", totalBookings);
+
         return ResponseEntity.ok(ApiResponse.ok(summary));
+    }
+
+    @GetMapping("/revenue-report")
+    @Operation(summary = "Get filtered revenue report")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getRevenueReport(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        
+        LocalDateTime start;
+        LocalDateTime end;
+        
+        if (startDate != null && !startDate.isEmpty()) {
+            start = java.time.LocalDate.parse(startDate).atStartOfDay();
+        } else {
+            start = LocalDateTime.now().withDayOfMonth(1).toLocalDate().atStartOfDay();
+        }
+        
+        if (endDate != null && !endDate.isEmpty()) {
+            end = java.time.LocalDate.parse(endDate).atTime(23, 59, 59, 999999999);
+        } else {
+            end = LocalDateTime.now();
+        }
+        
+        BigDecimal totalRevenue = bookingDao.sumRevenueBetween(start, end);
+        long totalBookings = bookingDao.countCompletedBetween(start, end);
+        
+        List<Map<String, Object>> rawChartData = bookingDao.getDailyRevenueBetween(start, end);
+        
+        List<Map<String, Object>> chartData = new ArrayList<>();
+        java.time.LocalDate sDate = start.toLocalDate();
+        java.time.LocalDate eDate = end.toLocalDate();
+        Map<String, BigDecimal> revenueMap = new HashMap<>();
+        for (Map<String, Object> item : rawChartData) {
+            String dateStr = item.get("date").toString();
+            revenueMap.put(dateStr, (BigDecimal) item.get("revenue"));
+        }
+        
+        for (java.time.LocalDate d = sDate; !d.isAfter(eDate); d = d.plusDays(1)) {
+            String dStr = d.toString();
+            BigDecimal rev = revenueMap.getOrDefault(dStr, BigDecimal.ZERO);
+            
+            String label = String.format("%02d/%02d", d.getDayOfMonth(), d.getMonthValue());
+            Map<String, Object> m = new HashMap<>();
+            m.put("label", label);
+            m.put("date", dStr);
+            m.put("revenue", rev);
+            chartData.add(m);
+        }
+        
+        List<com.cinema.booking.entity.BookingEntity> bookings = bookingDao.findBookingsBetween(start, end);
+        List<Map<String, Object>> bookingList = new ArrayList<>();
+        for (com.cinema.booking.entity.BookingEntity b : bookings) {
+            Map<String, Object> bm = new HashMap<>();
+            bm.put("bookingCode", b.getBookingCode());
+            bm.put("createdAt", b.getCreatedAt().toString());
+            bm.put("customerName", b.getUser() != null ? b.getUser().getFullName() : "Khách vãng lai");
+            bm.put("movieTitle", b.getShowtime() != null && b.getShowtime().getMovie() != null ? b.getShowtime().getMovie().getTitle() : "Phim");
+            bm.put("roomName", b.getShowtime() != null && b.getShowtime().getRoom() != null ? b.getShowtime().getRoom().getName() : "Phòng");
+            bm.put("showtimeStart", b.getShowtime() != null ? b.getShowtime().getStartTime().toString() : "");
+            bm.put("finalAmount", b.getFinalAmount());
+            bookingList.add(bm);
+        }
+        
+        Map<String, Object> report = new HashMap<>();
+        report.put("totalRevenue", totalRevenue != null ? totalRevenue : BigDecimal.ZERO);
+        report.put("totalBookings", totalBookings);
+        report.put("chartData", chartData);
+        report.put("bookings", bookingList);
+        
+        return ResponseEntity.ok(ApiResponse.ok(report));
+    }
+
+    @GetMapping("/monthly")
+    @Operation(summary = "Get monthly revenue reports")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getMonthlyReport() {
+        return ResponseEntity.ok(ApiResponse.ok(bookingDao.getMonthlyRevenue()));
     }
 }
