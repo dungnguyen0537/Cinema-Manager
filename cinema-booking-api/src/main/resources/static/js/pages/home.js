@@ -120,16 +120,15 @@ async function renderHome(app) {
                         <div class="hero-carousel-indicators">
                             ${indicatorsHtml}
                         </div>
-
-                        <!-- Thanh tìm kiếm -->
-                        <div class="hero-search-wrapper">
-                            <div class="hero-search" style="position:relative">
-                                <input type="text" id="search-input" placeholder="Tìm kiếm phim..." autocomplete="off" onkeydown="if(event.key === 'Enter') searchMovies(this.value)" oninput="handleSearchInput(this.value)">
-                                <svg class="search-icon" onclick="searchMovies(document.getElementById('search-input').value)" style="position:absolute;right:18px;top:50%;transform:translateY(-50%);color:var(--text-muted);cursor:pointer" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                                <div id="search-suggestions" class="search-suggestions" style="display:none;"></div>
-                            </div>
-                        </div>
                     </section>
+
+                    <!-- Thanh tìm kiếm đặt DƯỚI banner -->
+                    <div class="hero-search-below">
+                        <div class="hero-search" style="position:relative">
+                            <input type="text" id="search-input" placeholder="Tìm kiếm phim..." autocomplete="off" onkeydown="if(event.key === 'Enter') searchMovies(this.value)" oninput="handleSearchInput(this.value)">
+                            <svg class="search-icon" onclick="searchMovies(document.getElementById('search-input').value)" style="position:absolute;right:18px;top:50%;transform:translateY(-50%);color:var(--text-muted);cursor:pointer" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <div id="search-suggestions" class="search-suggestions" style="display:none;"></div>
+                        </div>
                 `;
 
                 // Khởi tạo carousel

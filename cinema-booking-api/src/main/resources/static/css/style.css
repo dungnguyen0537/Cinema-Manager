@@ -983,22 +983,34 @@ input { font-family: inherit; }
     box-shadow: 0 0 10px rgba(99,102,241,0.5);
 }
 
-/* Thanh tìm kiếm trên Hero */
-.hero-search-wrapper {
-    position: absolute;
-    bottom: 28px;
-    right: 60px;
-    z-index: 15;
-    width: 320px;
+/* Thanh tìm kiếm DƯỚI Hero Banner */
+.hero-search-below {
+    position: relative;
+    z-index: 10;
+    max-width: 600px;
+    margin: -28px auto 0;
+    padding: 0 24px;
+}
+.hero-search-below .hero-search {
+    background: var(--surface);
+    border-radius: 100px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    border: 1px solid var(--border-subtle);
+    overflow: visible;
+}
+.hero-search-below .hero-search input {
+    border-radius: 100px;
+    padding: 16px 52px 16px 24px;
+    font-size: 1rem;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .hero-carousel-section { height: 60vh; min-height: 380px; }
-    .hero-slide-content { padding: 28px 24px; }
-    .hero-title-carousel { font-size: 1.6rem; }
+    .hero-carousel-section { height: 55vh; min-height: 340px; }
+    .hero-slide-content { padding: 24px 20px; }
+    .hero-title-carousel { font-size: 1.5rem; }
     .hero-nav-arrow { display: none; }
-    .hero-carousel-indicators { left: 24px; bottom: 20px; }
-    .hero-search-wrapper { right: 24px; left: 24px; width: auto; bottom: 20px; display: none; }
+    .hero-carousel-indicators { left: 20px; bottom: 16px; }
+    .hero-search-below { margin-top: -20px; }
 }
 
