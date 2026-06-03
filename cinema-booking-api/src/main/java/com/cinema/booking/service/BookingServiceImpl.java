@@ -91,9 +91,16 @@ public class BookingServiceImpl implements BookingService {
                     Boolean acquired = redisTemplate.opsForValue()
                             .setIfAbsent(redisKey, userId.toString(), holdDurationMinutes, TimeUnit.MINUTES);
                     if (Boolean.FALSE.equals(acquired)) {
-                        // Seat already held by someone else, rollback
+                        // Kiểm tra nếu ghế do chính user này giữ → cho phép re-hold
+                        String holder = redisTemplate.opsForValue().get(redisKey);
+                        if (userId.toString().equals(holder)) {
+                            // Cùng user → gia hạn thời gian giữ ghế
+                            redisTemplate.expire(redisKey, holdDurationMinutes, TimeUnit.MINUTES);
+                            heldSeatIds.add(seatId);
+                            continue;
+                        }
                         throw new BusinessException(ErrorCode.BOOKING_SEATS_UNAVAILABLE,
-                                "Gháº¿ " + seatId + " Ä‘ang Ä‘Æ°á»£c ngÆ°á» i khÃ¡c giá»¯");
+                                "Ghế " + seatId + " đang được người khác giữ");
                     }
                     heldSeatIds.add(seatId);
                 } catch (Exception e) {
