@@ -26,4 +26,6 @@ public interface BookingDao {
     List<java.util.Map<String, Object>> getDailyRevenueBetween(LocalDateTime start, LocalDateTime end);
     List<java.util.Map<String, Object>> getMonthlyRevenue();
     List<BookingEntity> findBookingsBetween(LocalDateTime start, LocalDateTime end);
+    Optional<BookingEntity> findPendingByUserId(Long userId);
+    Optional<BookingEntity> findByPaymentToken(String token);
 }

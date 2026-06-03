@@ -12,4 +12,6 @@ public interface BookingService {
     List<BookingDto> getAllBookings(int page, int size);
     BookingDto getBookingAdmin(Long bookingId);
     void confirmPayment(Long bookingId);
+    BookingDto getPendingBooking(Long userId);
+    BookingDto getBookingByToken(Long userId, String token);
 }

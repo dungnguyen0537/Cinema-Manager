@@ -4,6 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAuthUI();
     renderCurrentRoute();
 
+    // Kiểm tra đơn đặt vé chưa thanh toán
+    setTimeout(() => {
+        if (typeof checkAndShowPendingBar === 'function') checkAndShowPendingBar();
+    }, 1500);
+
     window.addEventListener('scroll', () => {
         document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
     });

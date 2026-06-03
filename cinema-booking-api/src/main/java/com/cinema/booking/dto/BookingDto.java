@@ -16,6 +16,7 @@ import java.util.List;
 public class BookingDto {
     private Long id;
     private String bookingCode;
+    private String paymentToken;
     private String status;
     private String paymentStatus;
     private BigDecimal totalAmount;

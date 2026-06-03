@@ -66,4 +66,20 @@ public class BookingController {
         bookingService.cancelBooking(user.getId(), id);
         return ResponseEntity.ok(ApiResponse.ok(null, "Hủy đặt vé thành công"));
     }
+
+    @GetMapping("/pending")
+    @Operation(summary = "Kiểm tra đơn đặt vé đang chờ thanh toán")
+    public ResponseEntity<ApiResponse<BookingDto>> getPendingBooking(
+            @AuthenticationPrincipal CustomUserDetails user) {
+        BookingDto pending = bookingService.getPendingBooking(user.getId());
+        return ResponseEntity.ok(ApiResponse.ok(pending));
+    }
+
+    @GetMapping("/token/{token}")
+    @Operation(summary = "Lấy booking theo payment token")
+    public ResponseEntity<ApiResponse<BookingDto>> getBookingByToken(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable String token) {
+        return ResponseEntity.ok(ApiResponse.ok(bookingService.getBookingByToken(user.getId(), token)));
+    }
 }

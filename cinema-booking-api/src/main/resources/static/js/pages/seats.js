@@ -155,6 +155,18 @@ async function holdSeats(showtimeId) {
     btn.textContent = 'Đang xử lý...';
 
     try {
+        // Kiểm tra đơn pending trước
+        const pendingRes = await api.get('/bookings/pending');
+        const pending = pendingRes?.data;
+        if (pending && (pending.status === 'HOLDING' || pending.status === 'PENDING_PAYMENT')) {
+            btn.disabled = false;
+            btn.textContent = 'Giữ ghế & Tiếp tục';
+            showPendingBookingModal(pending, showtimeId);
+            return;
+        }
+    } catch (e) { /* no pending, continue */ }
+
+    try {
         const res = await api.post('/bookings/hold', {
             showtimeId: parseInt(showtimeId),
             seatIds: selectedSeats.map(s => s.id)
@@ -168,5 +180,61 @@ async function holdSeats(showtimeId) {
         showToast(err.message, 'error');
         btn.disabled = false;
         btn.textContent = 'Giữ ghế & Tiếp tục';
+    }
+}
+
+/* Modal khi đã có đơn pending */
+function showPendingBookingModal(booking, newShowtimeId) {
+    const seats = (booking.seats || []).map(s => `${s.rowName}${s.seatNumber}`).join(', ') || 'N/A';
+    const overlay = document.createElement('div');
+    overlay.className = 'success-overlay';
+    overlay.id = 'pending-modal-overlay';
+    overlay.innerHTML = `
+        <div class="success-popup" style="max-width:440px">
+            <div style="text-align:center;margin-bottom:16px">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <h3 style="font-size:1.1rem;margin-bottom:4px">Bạn đang có đơn chưa thanh toán</h3>
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px">Mỗi lần chỉ được có 1 đơn chờ thanh toán</p>
+            <div class="success-ticket-info" style="margin-bottom:16px">
+                <div class="info-row"><span>Phim</span><strong>${booking.movieTitle || ''}</strong></div>
+                <div class="info-row"><span>Ghế</span><strong>${seats}</strong></div>
+                <div class="info-row"><span>Số vé</span><strong>${(booking.seats || []).length}</strong></div>
+                <div class="info-row highlight"><span>Tổng thanh toán</span><strong>${formatMoney(booking.finalAmount || booking.totalAmount || 0)}</strong></div>
+            </div>
+            <div style="display:flex;gap:10px;flex-direction:column">
+                <button class="btn btn-primary btn-lg" style="width:100%" onclick="document.getElementById('pending-modal-overlay').remove(); navigate('/pay', {token: '${booking.paymentToken}'})">
+                    Thanh toán đơn cũ
+                </button>
+                <button class="btn btn-ghost" style="width:100%" onclick="cancelAndCreateNew('${booking.id}', ${newShowtimeId})">
+                    Hủy đơn & Tạo đơn mới
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
+async function cancelAndCreateNew(oldBookingId, showtimeId) {
+    const overlay = document.getElementById('pending-modal-overlay');
+    if (overlay) overlay.remove();
+    try {
+        await api.post(`/bookings/${oldBookingId}/cancel`);
+        showToast('Đã hủy đơn cũ. Đang tạo đơn mới...', 'info');
+        // Tạo đơn mới
+        const res = await api.post('/bookings/hold', {
+            showtimeId: parseInt(showtimeId),
+            seatIds: selectedSeats.map(s => s.id)
+        });
+        if (res && res.data) {
+            showToast('Giữ ghế thành công!', 'success');
+            navigate('/booking', { bookingId: res.data.id });
+        }
+    } catch (err) {
+        showToast(err.message, 'error');
     }
 }

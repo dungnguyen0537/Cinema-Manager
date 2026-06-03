@@ -6,6 +6,7 @@ const routes = {
     '/movie': 'renderMovieDetail',
     '/seats': 'renderSeats',
     '/booking': 'renderBooking',
+    '/pay': 'renderPayByToken',
     '/my-tickets': 'renderMyTickets',
     '/cinemas': 'renderCinemas',
     '/showtimes': 'renderShowtimes',
@@ -36,6 +37,7 @@ function renderCurrentRoute() {
         if (path.startsWith('/movie')) handlerName = routes['/movie'];
         else if (path.startsWith('/seats')) handlerName = routes['/seats'];
         else if (path.startsWith('/booking')) handlerName = routes['/booking'];
+        else if (path.startsWith('/pay')) handlerName = routes['/pay'];
         else handlerName = routes['/'];
     }
 

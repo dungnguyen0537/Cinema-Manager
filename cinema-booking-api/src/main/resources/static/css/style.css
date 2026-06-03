@@ -1037,3 +1037,64 @@ input { font-family: inherit; }
     .hc-section-title { font-size: 1.1rem; }
 }
 
+/* ======= PENDING BOOKING BAR ======= */
+.pending-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #1a1a1a;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+    animation: slideDown 0.4s ease;
+}
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+.pending-bar-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.pending-bar-content span { flex: 1; }
+.pending-bar-content .btn-sm {
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    background: #1a1a1a;
+    color: #f59e0b;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.pending-bar-content .btn-sm:hover {
+    background: #000;
+}
+.pending-bar-close {
+    background: none;
+    border: none;
+    color: #1a1a1a;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    opacity: 0.6;
+}
+.pending-bar-close:hover { opacity: 1; }
+
+/* Đẩy navbar xuống khi có pending bar */
+body:has(.pending-bar) .navbar {
+    top: 44px;
+}
+body:has(.pending-bar) #app {
+    padding-top: 44px;
+}

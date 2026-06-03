@@ -137,6 +137,7 @@ public class BookingServiceImpl implements BookingService {
 
         BookingEntity booking = BookingEntity.builder()
                 .bookingCode(bookingCode)
+                .paymentToken(UUID.randomUUID().toString())
                 .user(user)
                 .showtime(showtime)
                 .status("HOLDING")
@@ -360,6 +361,7 @@ public class BookingServiceImpl implements BookingService {
         BookingDto dto = BookingDto.builder()
                 .id(booking.getId())
                 .bookingCode(booking.getBookingCode())
+                .paymentToken(booking.getPaymentToken())
                 .status(booking.getStatus())
                 .paymentStatus(booking.getPaymentStatus())
                 .totalAmount(booking.getTotalAmount())
@@ -399,6 +401,22 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public BookingDto getPendingBooking(Long userId) {
+        Optional<BookingEntity> pending = bookingDao.findPendingByUserId(userId);
+        return pending.map(this::toDto).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public BookingDto getBookingByToken(Long userId, String token) {
+        BookingEntity booking = bookingDao.findByPaymentToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.BOOKING_NOT_FOUND));
+        if (!booking.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.AUTH_ACCESS_DENIED);
+        }
+        return toDto(booking);
     }
 }
 

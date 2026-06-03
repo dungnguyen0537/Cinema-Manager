@@ -138,8 +138,11 @@ async function confirmBooking(bookingId) {
         if (promoCode) body.promotionCode = promoCode;
 
         const res = await api.post('/bookings', body);
-        if (res) {
+        if (res && res.data && res.data.paymentToken) {
             showToast('Đặt vé thành công! Tiến hành thanh toán...', 'success');
+            navigate('/pay', { token: res.data.paymentToken });
+        } else if (res) {
+            showToast('Đặt vé thành công!', 'success');
             navigate('/booking', { bookingId });
         }
     } catch (err) {
@@ -351,4 +354,58 @@ function startCountdown(expiredAt) {
         const sec = Math.floor((diff % 60000) / 1000);
         el.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
     }, 1000);
+}
+
+/* === Trang thanh toán theo Payment Token === */
+async function renderPayByToken(app) {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token') || window._params?.token;
+    if (!token || !api.isLoggedIn()) { navigate('/'); return; }
+
+    app.innerHTML = `<div class="loading-spinner"><div class="spinner"></div></div>`;
+
+    try {
+        const res = await api.get(`/bookings/token/${token}`);
+        const booking = res?.data;
+        if (!booking) { navigate('/'); return; }
+
+        // Delegate tới renderBooking với bookingId
+        window._params = { bookingId: booking.id };
+        await renderBooking(app);
+    } catch (err) {
+        app.innerHTML = `<div class="empty-state"><div class="icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><h3>Đơn đặt vé không tồn tại hoặc đã hết hạn</h3><button class="btn btn-primary" onclick="navigate('/')">Về trang chủ</button></div>`;
+    }
+}
+
+/* === Kiểm tra đơn pending & hiện notification bar === */
+async function checkAndShowPendingBar() {
+    if (!api.isLoggedIn()) return;
+    const old = document.getElementById('pending-booking-bar');
+    if (old) old.remove();
+
+    try {
+        const res = await api.get('/bookings/pending');
+        const pending = res?.data;
+        if (!pending || !pending.paymentToken) return;
+        if (pending.status !== 'HOLDING' && pending.status !== 'PENDING_PAYMENT') return;
+
+        const path = window.location.pathname;
+        if (path.startsWith('/booking') || path.startsWith('/pay') || path.startsWith('/seats')) return;
+
+        const bar = document.createElement('div');
+        bar.id = 'pending-booking-bar';
+        bar.className = 'pending-bar';
+        bar.innerHTML = `
+            <div class="pending-bar-content">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span>Bạn có đơn đặt vé <strong>${pending.movieTitle || ''}</strong> chưa thanh toán</span>
+                <button class="btn btn-primary btn-sm" onclick="navigate('/pay', {token: '${pending.paymentToken}'})">Thanh toán ngay</button>
+                <button class="pending-bar-close" onclick="this.closest('.pending-bar').remove()">&times;</button>
+            </div>
+        `;
+        document.body.prepend(bar);
+    } catch (e) { /* ignore */ }
 }

@@ -13,6 +13,7 @@ public class BookingRowMapper implements RowMapper<BookingEntity> {
         BookingEntity entity = new BookingEntity();
         entity.setId(rs.getLong("id"));
         entity.setBookingCode(rs.getString("booking_code"));
+        entity.setPaymentToken(rs.getString("payment_token"));
         entity.setTotalAmount(rs.getBigDecimal("total_amount"));
         entity.setDiscountAmount(rs.getBigDecimal("discount_amount"));
         entity.setFinalAmount(rs.getBigDecimal("final_amount"));

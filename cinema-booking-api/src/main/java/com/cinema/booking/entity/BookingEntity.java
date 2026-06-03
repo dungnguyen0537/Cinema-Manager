@@ -1,5 +1,6 @@
 package com.cinema.booking.entity;
 
+
 import com.cinema.common.BaseEntity;
 import com.cinema.showtime.entity.ShowtimeEntity;
 import com.cinema.user.entity.UserEntity;
@@ -18,6 +19,7 @@ import java.util.List;
 public class BookingEntity extends BaseEntity {
 
         private String bookingCode;
+        private String paymentToken;
 
             private UserEntity user;
 
