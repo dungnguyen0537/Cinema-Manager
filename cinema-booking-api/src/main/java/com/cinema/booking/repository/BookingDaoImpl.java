@@ -22,18 +22,42 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.annotation.PostConstruct;
+
 @Repository
 @RequiredArgsConstructor
 public class BookingDaoImpl implements BookingDao {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final BookingRowMapper rowMapper = new BookingRowMapper();
+    private boolean hasPaymentTokenColumn = false;
+
+    @PostConstruct
+    public void init() {
+        try {
+            int count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'bookings' AND column_name = 'payment_token'",
+                new MapSqlParameterSource(), Integer.class);
+            if (count == 0) {
+                jdbcTemplate.getJdbcTemplate().execute("ALTER TABLE bookings ADD COLUMN payment_token VARCHAR(36) UNIQUE");
+                jdbcTemplate.getJdbcTemplate().execute("CREATE INDEX IF NOT EXISTS idx_bookings_payment_token ON bookings(payment_token)");
+                jdbcTemplate.getJdbcTemplate().execute("CREATE INDEX IF NOT EXISTS idx_bookings_user_status ON bookings(user_id, status)");
+            }
+            hasPaymentTokenColumn = true;
+        } catch (Exception e) {
+            try {
+                jdbcTemplate.getJdbcTemplate().execute("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_token VARCHAR(36) UNIQUE");
+                hasPaymentTokenColumn = true;
+            } catch (Exception ex) {
+                hasPaymentTokenColumn = false;
+            }
+        }
+    }
 
     @Override
     public BookingEntity save(BookingEntity entity) {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("bookingCode", entity.getBookingCode());
-        params.addValue("paymentToken", entity.getPaymentToken());
         params.addValue("userId", entity.getUser() != null ? entity.getUser().getId() : null);
         params.addValue("showtimeId", entity.getShowtime() != null ? entity.getShowtime().getId() : null);
         params.addValue("totalAmount", entity.getTotalAmount());
@@ -49,10 +73,21 @@ public class BookingDaoImpl implements BookingDao {
             params.addValue("createdAt", now);
             params.addValue("updatedAt", now);
             params.addValue("createdBy", AuditConfig.getCurrentAuditor());
-            String sql = "INSERT INTO bookings (booking_code, payment_token, user_id, showtime_id, total_amount, discount_amount, " +
+
+            String sql;
+            if (hasPaymentTokenColumn) {
+                params.addValue("paymentToken", entity.getPaymentToken());
+                sql = "INSERT INTO bookings (booking_code, payment_token, user_id, showtime_id, total_amount, discount_amount, " +
                     "final_amount, status, hold_expired_at, payment_status, promotion_code, created_at, updated_at, created_by) " +
                     "VALUES (:bookingCode, :paymentToken, :userId, :showtimeId, :totalAmount, :discountAmount, :finalAmount, :status, " +
                     ":holdExpiredAt, :paymentStatus, :promotionCode, :createdAt, :updatedAt, :createdBy)";
+            } else {
+                sql = "INSERT INTO bookings (booking_code, user_id, showtime_id, total_amount, discount_amount, " +
+                    "final_amount, status, hold_expired_at, payment_status, promotion_code, created_at, updated_at, created_by) " +
+                    "VALUES (:bookingCode, :userId, :showtimeId, :totalAmount, :discountAmount, :finalAmount, :status, " +
+                    ":holdExpiredAt, :paymentStatus, :promotionCode, :createdAt, :updatedAt, :createdBy)";
+            }
+
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(sql, params, keyHolder, new String[]{"id"});
             entity.setId(keyHolder.getKey().longValue());
@@ -63,10 +98,20 @@ public class BookingDaoImpl implements BookingDao {
         } else {
             params.addValue("id", entity.getId());
             params.addValue("updatedAt", LocalDateTime.now());
-            String sql = "UPDATE bookings SET booking_code = :bookingCode, payment_token = :paymentToken, user_id = :userId, showtime_id = :showtimeId, " +
+
+            String sql;
+            if (hasPaymentTokenColumn) {
+                params.addValue("paymentToken", entity.getPaymentToken());
+                sql = "UPDATE bookings SET booking_code = :bookingCode, payment_token = :paymentToken, user_id = :userId, showtime_id = :showtimeId, " +
                     "total_amount = :totalAmount, discount_amount = :discountAmount, final_amount = :finalAmount, " +
                     "status = :status, hold_expired_at = :holdExpiredAt, payment_status = :paymentStatus, " +
                     "promotion_code = :promotionCode, updated_at = :updatedAt WHERE id = :id";
+            } else {
+                sql = "UPDATE bookings SET booking_code = :bookingCode, user_id = :userId, showtime_id = :showtimeId, " +
+                    "total_amount = :totalAmount, discount_amount = :discountAmount, final_amount = :finalAmount, " +
+                    "status = :status, hold_expired_at = :holdExpiredAt, payment_status = :paymentStatus, " +
+                    "promotion_code = :promotionCode, updated_at = :updatedAt WHERE id = :id";
+            }
             jdbcTemplate.update(sql, params);
         }
         return entity;
@@ -322,23 +367,32 @@ public class BookingDaoImpl implements BookingDao {
 
     @Override
     public Optional<BookingEntity> findPendingByUserId(Long userId) {
-        String sql = "SELECT * FROM bookings WHERE user_id = :userId AND status IN ('HOLDING', 'PENDING_PAYMENT') " +
-                "AND hold_expired_at > :now ORDER BY created_at DESC LIMIT 1";
-        MapSqlParameterSource p = new MapSqlParameterSource();
-        p.addValue("userId", userId);
-        p.addValue("now", LocalDateTime.now());
-        List<BookingEntity> list = jdbcTemplate.query(sql, p, rowMapper);
-        if (list.isEmpty()) return Optional.empty();
-        populateAssociations(list.get(0));
-        return Optional.of(list.get(0));
+        try {
+            String sql = "SELECT * FROM bookings WHERE user_id = :userId AND status IN ('HOLDING', 'PENDING_PAYMENT') " +
+                    "AND hold_expired_at > :now ORDER BY created_at DESC LIMIT 1";
+            MapSqlParameterSource p = new MapSqlParameterSource();
+            p.addValue("userId", userId);
+            p.addValue("now", LocalDateTime.now());
+            List<BookingEntity> list = jdbcTemplate.query(sql, p, rowMapper);
+            if (list.isEmpty()) return Optional.empty();
+            populateAssociations(list.get(0));
+            return Optional.of(list.get(0));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     @Override
     public Optional<BookingEntity> findByPaymentToken(String token) {
-        String sql = "SELECT * FROM bookings WHERE payment_token = :token";
-        List<BookingEntity> list = jdbcTemplate.query(sql, new MapSqlParameterSource("token", token), rowMapper);
-        if (list.isEmpty()) return Optional.empty();
-        populateAssociations(list.get(0));
-        return Optional.of(list.get(0));
+        if (!hasPaymentTokenColumn) return Optional.empty();
+        try {
+            String sql = "SELECT * FROM bookings WHERE payment_token = :token";
+            List<BookingEntity> list = jdbcTemplate.query(sql, new MapSqlParameterSource("token", token), rowMapper);
+            if (list.isEmpty()) return Optional.empty();
+            populateAssociations(list.get(0));
+            return Optional.of(list.get(0));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }
