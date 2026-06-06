@@ -1,6 +1,7 @@
-﻿-- =============================================
+-- =============================================
 -- Cinema Booking System - Database Schema
 -- PostgreSQL 16
+-- Gộp từ: V1__init_database.sql + V2__fix_admin_role.sql + V3__add_payment_token.sql
 -- =============================================
 
 -- ===== USERS & ROLES =====
@@ -44,6 +45,8 @@ CREATE TABLE movies (
     poster_url VARCHAR(500),
     trailer_url VARCHAR(500),
     release_date DATE,
+    director VARCHAR(255),
+    cast_members TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'COMING_SOON',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP,
@@ -62,6 +65,7 @@ CREATE TABLE cinemas (
     name VARCHAR(200) NOT NULL,
     address VARCHAR(500),
     city VARCHAR(100),
+    phone VARCHAR(20),
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP,
@@ -107,10 +111,11 @@ CREATE TABLE showtimes (
     created_by VARCHAR(100)
 );
 
--- ===== BOOKINGS =====
+-- ===== BOOKINGS (bao gồm payment_token từ V3) =====
 CREATE TABLE bookings (
     id BIGSERIAL PRIMARY KEY,
     booking_code VARCHAR(50) NOT NULL UNIQUE,
+    payment_token VARCHAR(36) UNIQUE,
     user_id BIGINT NOT NULL REFERENCES users(id),
     showtime_id BIGINT NOT NULL REFERENCES showtimes(id),
     total_amount DECIMAL(12,2),
@@ -178,6 +183,7 @@ CREATE TABLE promotions (
     end_time TIMESTAMP NOT NULL,
     usage_limit INT,
     used_count INT DEFAULT 0,
+    applicable_movie_ids TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP,
@@ -208,13 +214,16 @@ CREATE INDEX idx_bookings_user ON bookings(user_id);
 CREATE INDEX idx_bookings_showtime ON bookings(showtime_id);
 CREATE INDEX idx_bookings_status_expire ON bookings(status, hold_expired_at);
 CREATE INDEX idx_bookings_code ON bookings(booking_code);
+CREATE INDEX idx_bookings_payment_token ON bookings(payment_token);
+CREATE INDEX idx_bookings_user_status ON bookings(user_id, status);
 CREATE INDEX idx_payments_booking ON payments(booking_id);
 CREATE INDEX idx_payments_sepay_tx ON payments(sepay_transaction_id);
 CREATE INDEX idx_tickets_booking ON tickets(booking_id);
 CREATE INDEX idx_tickets_code ON tickets(ticket_code);
 CREATE INDEX idx_seats_room ON seats(room_id);
+
 -- =============================================
--- Seed Data for Cinema Booking System
+-- Seed Data
 -- =============================================
 
 -- Roles
@@ -237,6 +246,18 @@ VALUES ('Nhân viên 1', 'staff@cinema.vn', '0900000002',
 
 INSERT INTO user_roles (user_id, role_id)
 VALUES (2, 2); -- Staff role
+
+-- Fix admin role (từ V2)
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u
+CROSS JOIN roles r
+WHERE u.email = 'admin@cinema.vn'
+  AND r.name = 'ADMIN'
+  AND NOT EXISTS (
+    SELECT 1 FROM user_roles ur
+    WHERE ur.user_id = u.id AND ur.role_id = r.id
+  );
 
 -- Genres
 INSERT INTO genres (name) VALUES ('Hành Động');
@@ -284,10 +305,8 @@ DECLARE
 BEGIN
     FOREACH r IN ARRAY row_names LOOP
         FOR s IN 1..10 LOOP
-            -- VIP rows: E, F
             IF r IN ('E', 'F') THEN
                 seat_t := 'VIP';
-            -- Couple seats: J row
             ELSIF r = 'J' THEN
                 seat_t := 'COUPLE';
             ELSE
@@ -433,23 +452,3 @@ VALUES ('GIAM20K', 'Giảm 20,000đ cho đơn từ 150,000đ', 'FIXED_AMOUNT', 2
 
 INSERT INTO promotions (code, description, discount_type, discount_value, min_order_value, max_discount_amount, start_time, end_time, usage_limit, status)
 VALUES ('VIP30', 'Giảm 30% cho ghế VIP', 'PERCENTAGE', 30, 200000, 100000, NOW(), NOW() + INTERVAL '60 days', 200, 'ACTIVE');
--- Add phone column to cinemas table
-ALTER TABLE cinemas ADD COLUMN phone VARCHAR(20);
-ALTER TABLE movies
-ADD COLUMN director VARCHAR(255),
-ADD COLUMN cast_members TEXT;
--- Add applicable_movie_ids column to promotions (stores comma-separated movie IDs, NULL = all movies)
-ALTER TABLE promotions ADD COLUMN applicable_movie_ids TEXT;
--- Ensure admin user has ADMIN role
--- This fixes the case where roles were accidentally deleted by save() method
-
-INSERT INTO user_roles (user_id, role_id)
-SELECT u.id, r.id
-FROM users u
-CROSS JOIN roles r
-WHERE u.email = 'admin@cinema.vn'
-  AND r.name = 'ADMIN'
-  AND NOT EXISTS (
-    SELECT 1 FROM user_roles ur
-    WHERE ur.user_id = u.id AND ur.role_id = r.id
-  );
