@@ -832,12 +832,12 @@ input { font-family: inherit; }
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     padding: 0 60px;
     will-change: transform;
-    justify-content: center;
 }
 
 /* Mỗi thẻ poster */
 .hc-card {
-    flex: 0 0 220px;
+    flex: 0 0 calc((100vw - 160px) / 3);
+    max-width: 360px;
     cursor: pointer;
     border-radius: 14px;
     overflow: hidden;
@@ -1025,13 +1025,13 @@ input { font-family: inherit; }
 /* Responsive */
 @media (max-width: 900px) {
     .hc-track { padding: 0 24px; gap: 14px; }
-    .hc-card { flex: 0 0 180px; }
+    .hc-card { flex: 0 0 calc((100vw - 88px) / 2); max-width: 260px; }
     .hc-section-header { padding: 20px 24px 0; }
     .hc-arrow { display: none; }
 }
 @media (max-width: 480px) {
     .hc-track { padding: 0 16px; gap: 10px; }
-    .hc-card { flex: 0 0 150px; }
+    .hc-card { flex: 0 0 calc((100vw - 52px) / 2); max-width: 200px; }
     .hc-card-info { padding: 8px 10px 12px; }
     .hc-card-title { font-size: 0.82rem; }
     .hc-section-header { padding: 16px 16px 0; }

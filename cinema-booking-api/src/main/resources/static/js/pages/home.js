@@ -156,7 +156,7 @@ function heroScrollBy(direction) {
     heroCardWidth = cards[0].offsetWidth + 20;
 
     const maxScroll = track.scrollWidth - wrap.offsetWidth;
-    heroScrollPos += direction * heroCardWidth * 2;
+    heroScrollPos += direction * heroCardWidth;
 
     // Vòng tròn
     if (heroScrollPos > maxScroll) heroScrollPos = 0;
