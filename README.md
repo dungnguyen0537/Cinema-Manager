@@ -6,6 +6,7 @@
 
 > 🌐 **Website:** [cinema.dshinee.site](https://cinema.dshinee.site)  
 > 📚 **Học phần:** Lập Trình Web Bằng Java — Khoa Công nghệ Thông tin
+> 📑 **Tài liệu Phân tích Nghiệp vụ & Kiến trúc Hệ thống (BA Specs):** Xem chi tiết tại [docs/BA_SPECIFICATION.md](./docs/BA_SPECIFICATION.md) (Use Case, Mô hình dữ liệu ERD 3NF, Luồng giữ ghế chống xung đột Redis Distributed Lock).
 
 ---
 
